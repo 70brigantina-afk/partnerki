@@ -12,7 +12,9 @@
     "validate:courses": "tsx scripts/validate-courses.ts",
     "format": "prettier --check .",
     "format:fix": "prettier --write .",
-    "lint:links": "tsx scripts/check-links.ts"
+    "lint:links": "tsx scripts/check-links.ts",
+    "import:courses": "tsx scripts/import-courses-from-csv.ts",
+    "import:courses:dry": "tsx scripts/import-courses-from-csv.ts --dry-run --input data/courses-import-template.csv"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.4.0",
@@ -22,6 +24,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.4",
+    "csv-parse": "^7.0.1",
     "prettier": "^3.5.3",
     "prettier-plugin-astro": "^0.14.1",
     "tsx": "^4.19.3",

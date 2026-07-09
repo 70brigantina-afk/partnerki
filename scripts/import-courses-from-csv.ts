@@ -49,10 +49,7 @@ const REQUIRED_FIELDS = [
   'checkedAt',
 ] as const;
 
-const ACTIVE_REQUIRED_FIELDS = [
-  ...REQUIRED_FIELDS,
-  'affiliateUrl',
-] as const;
+const ACTIVE_REQUIRED_FIELDS = [...REQUIRED_FIELDS, 'affiliateUrl'] as const;
 
 const FORBIDDEN_URL_MARKERS = [
   '#',
@@ -378,8 +375,6 @@ function parseCourseRow(
   rowNumber: number,
   issues: RowIssue[],
 ): ParsedCourse | null {
-  const rowIssuesBefore = issues.length;
-
   for (const field of REQUIRED_FIELDS) {
     if (!row[field]?.trim()) {
       issues.push({
@@ -393,7 +388,10 @@ function parseCourseRow(
   }
 
   const category = row.category?.trim() ?? '';
-  if (category && !VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])) {
+  if (
+    category &&
+    !VALID_CATEGORIES.includes(category as (typeof VALID_CATEGORIES)[number])
+  ) {
     issues.push({
       rowNumber,
       id: row.id,
@@ -403,7 +401,8 @@ function parseCourseRow(
     });
   }
 
-  let status = (row.status?.trim() || 'draft') as (typeof VALID_STATUSES)[number];
+  let status = (row.status?.trim() ||
+    'draft') as (typeof VALID_STATUSES)[number];
   if (!VALID_STATUSES.includes(status)) {
     issues.push({
       rowNumber,
@@ -415,7 +414,8 @@ function parseCourseRow(
     status = 'draft';
   }
 
-  const level = (row.level?.trim() || 'beginner') as (typeof VALID_LEVELS)[number];
+  const level = (row.level?.trim() ||
+    'beginner') as (typeof VALID_LEVELS)[number];
   if (row.level?.trim() && !VALID_LEVELS.includes(level)) {
     issues.push({
       rowNumber,
@@ -426,7 +426,8 @@ function parseCourseRow(
     });
   }
 
-  const format = (row.format?.trim() || 'video') as (typeof VALID_FORMATS)[number];
+  const format = (row.format?.trim() ||
+    'video') as (typeof VALID_FORMATS)[number];
   if (row.format?.trim() && !VALID_FORMATS.includes(format)) {
     issues.push({
       rowNumber,
@@ -448,8 +449,19 @@ function parseCourseRow(
     });
   }
 
-  const checkedAt = parseDate(row.checkedAt, 'checkedAt', rowNumber, issues, true);
-  const publishedAt = parseDate(row.publishedAt, 'publishedAt', rowNumber, issues);
+  const checkedAt = parseDate(
+    row.checkedAt,
+    'checkedAt',
+    rowNumber,
+    issues,
+    true,
+  );
+  const publishedAt = parseDate(
+    row.publishedAt,
+    'publishedAt',
+    rowNumber,
+    issues,
+  );
   const updatedAt = parseDate(row.updatedAt, 'updatedAt', rowNumber, issues);
 
   const officialUrl = validateUrl(
@@ -473,7 +485,8 @@ function parseCourseRow(
         rowNumber,
         id: row.id,
         level: 'error',
-        message: 'Не удалось автоматически создать slug. Заполните поле slug вручную.',
+        message:
+          'Не удалось автоматически создать slug. Заполните поле slug вручную.',
       });
     } else {
       issues.push({
@@ -484,7 +497,7 @@ function parseCourseRow(
         message: `Поле slug не указано. Будет использован автоматический slug: "${slug}".`,
       });
     }
-  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     issues.push({
       rowNumber,
       id: row.id,
@@ -509,8 +522,20 @@ function parseCourseRow(
     issues,
     false,
   );
-  const feedback = parseBoolean(row.feedback, 'feedback', rowNumber, issues, false);
-  const featured = parseBoolean(row.featured, 'featured', rowNumber, issues, false);
+  const feedback = parseBoolean(
+    row.feedback,
+    'feedback',
+    rowNumber,
+    issues,
+    false,
+  );
+  const featured = parseBoolean(
+    row.featured,
+    'featured',
+    rowNumber,
+    issues,
+    false,
+  );
   const recommended = parseBoolean(
     row.recommended,
     'recommended',
@@ -520,7 +545,11 @@ function parseCourseRow(
   );
   const priority = parseNumber(row.priority, 'priority', rowNumber, issues, 0);
 
-  if (issues.some((issue) => issue.level === 'error' && issue.rowNumber === rowNumber)) {
+  if (
+    issues.some(
+      (issue) => issue.level === 'error' && issue.rowNumber === rowNumber,
+    )
+  ) {
     return null;
   }
 
@@ -595,7 +624,10 @@ function parseCourseRow(
   return { slug, frontmatter, body };
 }
 
-function writeErrorReport(summary: ImportSummary, dryRun: boolean): string | null {
+function writeErrorReport(
+  summary: ImportSummary,
+  dryRun: boolean,
+): string | null {
   const allIssues = [...summary.errors, ...summary.warnings];
   if (!allIssues.length) return null;
 
@@ -638,19 +670,25 @@ function writeErrorReport(summary: ImportSummary, dryRun: boolean): string | nul
   return reportPath;
 }
 
-function printSummary(summary: ImportSummary, dryRun: boolean, inputPath: string) {
-  console.info(`\n${dryRun ? 'Проверка CSV (dry-run)' : 'Импорт курсов из CSV'}`);
+function printSummary(
+  summary: ImportSummary,
+  dryRun: boolean,
+  inputPath: string,
+) {
+  console.info(
+    `\n${dryRun ? 'Проверка CSV (dry-run)' : 'Импорт курсов из CSV'}`,
+  );
   console.info(`Файл: ${inputPath}`);
   console.info(`Строк прочитано: ${summary.rowsRead}`);
-  console.info(`${dryRun ? 'Будет создано файлов' : 'Создано файлов'}: ${summary.created}`);
+  console.info(
+    `${dryRun ? 'Будет создано файлов' : 'Создано файлов'}: ${summary.created}`,
+  );
   console.info(`Пропущено: ${summary.skipped}`);
   console.info(`Ошибок: ${summary.errors.length}`);
   console.info(`Предупреждений: ${summary.warnings.length}`);
 
   if (summary.plannedFiles.length) {
-    console.info(
-      `\n${dryRun ? 'Планируемые файлы' : 'Созданные файлы'}:`,
-    );
+    console.info(`\n${dryRun ? 'Планируемые файлы' : 'Созданные файлы'}:`);
     for (const file of summary.plannedFiles) {
       console.info(`  - ${file}`);
     }
@@ -659,18 +697,14 @@ function printSummary(summary: ImportSummary, dryRun: boolean, inputPath: string
   if (summary.errors.length) {
     console.error('\nОшибки по строкам:');
     for (const issue of summary.errors) {
-      console.error(
-        `  [строка ${issue.rowNumber}] ${issue.message}`,
-      );
+      console.error(`  [строка ${issue.rowNumber}] ${issue.message}`);
     }
   }
 
   if (summary.warnings.length) {
     console.warn('\nПредупреждения:');
     for (const issue of summary.warnings) {
-      console.warn(
-        `  [строка ${issue.rowNumber}] ${issue.message}`,
-      );
+      console.warn(`  [строка ${issue.rowNumber}] ${issue.message}`);
     }
   }
 }
@@ -760,7 +794,8 @@ function main() {
         id: row.id,
         slug: parsed.slug,
         level: 'error',
-        message: 'Демонстрационные файлы защищены от перезаписи. Удалите файл вручную или используйте другой slug.',
+        message:
+          'Демонстрационные файлы защищены от перезаписи. Удалите файл вручную или используйте другой slug.',
       });
       summary.skipped += 1;
       continue;
@@ -784,9 +819,7 @@ function main() {
   }
 
   if (dryRun) {
-    console.info(
-      '\n✅ Проверка завершена. Файлы проекта не изменены.',
-    );
+    console.info('\n✅ Проверка завершена. Файлы проекта не изменены.');
   } else if (summary.created > 0) {
     console.info('\n✅ Импорт завершён.');
   } else {
