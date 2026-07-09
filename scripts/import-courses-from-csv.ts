@@ -484,7 +484,7 @@ function parseCourseRow(
         message: `Поле slug не указано. Будет использован автоматический slug: "${slug}".`,
       });
     }
-  } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
     issues.push({
       rowNumber,
       id: row.id,
@@ -494,8 +494,35 @@ function parseCourseRow(
     });
   }
 
-  const hasErrors = issues.length > rowIssuesBefore;
-  if (hasErrors) return null;
+  const isFree = parseBoolean(row.isFree, 'isFree', rowNumber, issues, false);
+  const hasFreeTrial = parseBoolean(
+    row.hasFreeTrial,
+    'hasFreeTrial',
+    rowNumber,
+    issues,
+    false,
+  );
+  const certificate = parseBoolean(
+    row.certificate,
+    'certificate',
+    rowNumber,
+    issues,
+    false,
+  );
+  const feedback = parseBoolean(row.feedback, 'feedback', rowNumber, issues, false);
+  const featured = parseBoolean(row.featured, 'featured', rowNumber, issues, false);
+  const recommended = parseBoolean(
+    row.recommended,
+    'recommended',
+    rowNumber,
+    issues,
+    false,
+  );
+  const priority = parseNumber(row.priority, 'priority', rowNumber, issues, 0);
+
+  if (issues.some((issue) => issue.level === 'error' && issue.rowNumber === rowNumber)) {
+    return null;
+  }
 
   const frontmatter: Record<string, unknown> = {
     id: row.id?.trim(),
@@ -508,14 +535,8 @@ function parseCourseRow(
     shortDescription: row.shortDescription?.trim(),
     fullDescription: row.fullDescription?.trim(),
     type,
-    isFree: parseBoolean(row.isFree, 'isFree', rowNumber, issues, false),
-    hasFreeTrial: parseBoolean(
-      row.hasFreeTrial,
-      'hasFreeTrial',
-      rowNumber,
-      issues,
-      false,
-    ),
+    isFree,
+    hasFreeTrial,
     priceText: row.priceText?.trim(),
     level,
     format,
@@ -525,28 +546,16 @@ function parseCourseRow(
     curriculum: parseList(row.curriculum),
     advantages: parseList(row.advantages),
     limitations: parseList(row.limitations),
-    certificate: parseBoolean(
-      row.certificate,
-      'certificate',
-      rowNumber,
-      issues,
-      false,
-    ),
-    feedback: parseBoolean(row.feedback, 'feedback', rowNumber, issues, false),
+    certificate,
+    feedback,
     image: row.image?.trim(),
     officialUrl,
     affiliateUrl,
     partnerProgram: row.partnerProgram?.trim(),
     tags: parseList(row.tags),
-    featured: parseBoolean(row.featured, 'featured', rowNumber, issues, false),
-    recommended: parseBoolean(
-      row.recommended,
-      'recommended',
-      rowNumber,
-      issues,
-      false,
-    ),
-    priority: parseNumber(row.priority, 'priority', rowNumber, issues, 0),
+    featured,
+    recommended,
+    priority,
     status,
     checkedAt,
     publishedAt,
