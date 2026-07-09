@@ -1,0 +1,67 @@
+---
+interface Props {
+  courseId: string;
+  courseSlug: string;
+  courseTitle: string;
+  compact?: boolean;
+}
+
+const { courseId, courseSlug, courseTitle, compact = false } = Astro.props;
+---
+
+<button
+  class:list={['fav-btn', { 'fav-btn--compact': compact }]}
+  type="button"
+  aria-label="Добавить в избранное"
+  data-fav-btn
+  data-course-id={courseId}
+  data-course-slug={courseSlug}
+  data-course-title={courseTitle}
+>
+  <svg
+    width={compact ? 16 : 18}
+    height={compact ? 16 : 18}
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+      stroke="currentColor"
+      stroke-width="1.5"></path>
+  </svg>
+  {!compact && <span class="fav-btn__text">В избранное</span>}
+</button>
+
+<style>
+  .fav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: 0.35rem 0.6rem;
+    font-size: var(--text-xs);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--color-text-muted);
+    transition: all var(--transition);
+  }
+  .fav-btn--compact {
+    padding: 0.3rem;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    border-color: transparent;
+  }
+  .fav-btn--compact:hover {
+    background: #fdf2f8;
+    border-color: #fbcfe8;
+    color: #db2777;
+  }
+  .fav-btn.is-active,
+  .fav-btn--compact.is-active {
+    color: #db2777;
+    border-color: #fbcfe8;
+    background: #fdf2f8;
+  }
+</style>

@@ -1,0 +1,151 @@
+---
+import { siteConfig } from '@/config/site';
+import { categories } from '@/config/categories';
+---
+
+<footer class="footer">
+  <div class="container footer__grid">
+    <div class="footer__brand">
+      <a class="footer__logo" href="/">
+        <span class="footer__logo-mark" aria-hidden="true">Н</span>
+        {siteConfig.name}
+      </a>
+      <p class="footer__tagline">{siteConfig.tagline}</p>
+      <p class="footer__disclosure">{siteConfig.affiliateDisclosure}</p>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Направления</h3>
+      <ul class="footer__links">
+        {
+          categories.map((cat) => (
+            <li>
+              <a href={`/${cat.slug}/`}>{cat.name}</a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Сервисы</h3>
+      <ul class="footer__links">
+        <li><a href="/besplatnye/">Бесплатное обучение</a></li>
+        <li><a href="/platnye/">Платное обучение</a></li>
+        <li><a href="/podbor-obucheniya/">Подбор обучения</a></li>
+        <li><a href="/sravnenie/">Сравнение</a></li>
+        <li><a href="/izbrannoe/">Избранное</a></li>
+      </ul>
+    </div>
+
+    <div class="footer__col">
+      <h3 class="footer__title">Информация</h3>
+      <ul class="footer__links">
+        <li><a href="/o-proekte/">О проекте</a></li>
+        <li><a href="/kontakty/">Контакты</a></li>
+        <li><a href="/politika-konfidentsialnosti/">Конфиденциальность</a></li>
+        <li><a href="/polzovatelskoe-soglashenie/">Соглашение</a></li>
+        <li><a href="/partnerskoe-raskrytie/">Партнёрское раскрытие</a></li>
+        <li><a href="/reklama/">Маркировка рекламы</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="container footer__bottom">
+    <p>© {new Date().getFullYear()} {siteConfig.name}</p>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    margin-top: var(--space-10);
+    padding-block: var(--space-10) var(--space-5);
+    background: #0f172a;
+    color: #cbd5e1;
+  }
+  .footer__grid {
+    display: grid;
+    gap: var(--space-8);
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+  }
+  @media (max-width: 900px) {
+    .footer__grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .footer__brand {
+      grid-column: 1 / -1;
+    }
+  }
+  @media (max-width: 480px) {
+    .footer__grid {
+      grid-template-columns: 1fr;
+      gap: var(--space-6);
+    }
+  }
+  .footer__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-base);
+    text-decoration: none;
+    margin-bottom: var(--space-3);
+  }
+  .footer__logo:hover {
+    text-decoration: none;
+    color: #fff;
+  }
+  .footer__logo-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 800;
+  }
+  .footer__tagline,
+  .footer__disclosure {
+    font-size: var(--text-sm);
+    color: #94a3b8;
+    line-height: 1.6;
+    max-width: 28rem;
+  }
+  .footer__title {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-heading);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    color: #f1f5f9;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .footer__links {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .footer__links li {
+    margin-bottom: 0.55rem;
+  }
+  .footer__links a {
+    color: #94a3b8;
+    font-size: var(--text-sm);
+    text-decoration: none;
+    transition: color var(--transition);
+  }
+  .footer__links a:hover {
+    color: #fff;
+    text-decoration: none;
+  }
+  .footer__bottom {
+    margin-top: var(--space-8);
+    padding-top: var(--space-5);
+    border-top: 1px solid #1e293b;
+    font-size: var(--text-sm);
+    color: #64748b;
+  }
+</style>

@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Quiz from '@/components/Quiz.astro';
+import { getPublicCourses } from '@/utils/courses';
+
+const courses = await getPublicCourses();
+---
+
+<BaseLayout
+  title="Подбор обучения — короткий тест"
+  description="Ответьте на несколько вопросов и получите подходящие варианты обучения."
+>
+  <div class="page-header container">
+    <h1>Подбор обучения</h1>
+    <p>
+      Не знаете, с чего начать? Пройдите короткий тест — мы подберём до пяти
+      подходящих программ.
+    </p>
+  </div>
+  <section class="section">
+    <div class="container">
+      <Quiz courses={courses} />
+    </div>
+  </section>
+</BaseLayout>

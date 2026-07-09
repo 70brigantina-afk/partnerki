@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { siteConfig } from '@/config/site';
+---
+
+<BaseLayout
+  title="О проекте"
+  description="Навигатор обучения — независимый каталог онлайн-программ с честными описаниями и удобным подбором."
+>
+  <div class="legal-page container prose">
+    <h1>О проекте</h1>
+    <p>
+      <strong>{siteConfig.name}</strong> — {siteConfig.tagline.toLowerCase()}.
+    </p>
+    <p>
+      Мы собираем образовательные программы по востребованным направлениям,
+      помогаем сравнить варианты и переходить на официальные сайты
+      организаторов.
+    </p>
+    <h2>Наши принципы</h2>
+    <ul>
+      <li>Понятное разделение по направлениям и целям</li>
+      <li>Честные описания без выдуманных рейтингов и отзывов</li>
+      <li>Открытое партнёрское раскрытие</li>
+      <li>Регулярная проверка актуальности информации</li>
+    </ul>
+    <p>{siteConfig.affiliateDisclosure}</p>
+  </div>
+</BaseLayout>

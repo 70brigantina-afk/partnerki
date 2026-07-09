@@ -1,0 +1,27 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CourseGrid from '@/components/CourseGrid.astro';
+import { getPublicCourses, getPaidCourses } from '@/utils/courses';
+
+const courses = getPaidCourses(await getPublicCourses());
+---
+
+<BaseLayout
+  title="Платное обучение — каталог программ"
+  description="Платные образовательные программы из каталога Навигатор обучения."
+>
+  <div class="page-header container">
+    <h1>Платное обучение</h1>
+    <p>
+      Каталог платных программ с возможностью сравнения и подробным описанием.
+    </p>
+  </div>
+  <section class="section">
+    <div class="container">
+      <CourseGrid
+        courses={courses}
+        emptyMessage="Платные программы появятся после добавления активных записей."
+      />
+    </div>
+  </section>
+</BaseLayout>

@@ -1,0 +1,120 @@
+---
+import type { Category } from '@/config/categories';
+
+interface Props {
+  categories: Category[];
+}
+
+const { categories } = Astro.props;
+---
+
+<nav
+  class="mobile-menu"
+  id="mobile-menu-panel"
+  aria-label="Мобильное меню"
+  aria-hidden="true"
+>
+  <div class="mobile-menu__inner">
+    <p class="mobile-menu__heading">Направления</p>
+    <ul class="mobile-menu__list">
+      {
+        categories.map((cat) => (
+          <li>
+            <a href={`/${cat.slug}/`}>{cat.name}</a>
+          </li>
+        ))
+      }
+    </ul>
+
+    <ul class="mobile-menu__list mobile-menu__list--main">
+      <li><a href="/besplatnye/">Бесплатно</a></li>
+      <li><a href="/podbor-obucheniya/">Подбор</a></li>
+      <li><a href="/sravnenie/">Сравнение</a></li>
+      <li><a href="/izbrannoe/">Избранное</a></li>
+      <li><a href="/o-proekte/">О проекте</a></li>
+      <li><a href="/kontakty/">Контакты</a></li>
+    </ul>
+  </div>
+</nav>
+
+<style>
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    right: 0;
+    z-index: 200;
+    max-height: calc(100dvh - var(--header-height));
+    overflow-x: hidden;
+    overflow-y: auto;
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition:
+      opacity var(--transition),
+      visibility var(--transition);
+  }
+
+  .mobile-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-menu__inner {
+    padding: var(--space-4) var(--space-4) var(--space-6);
+  }
+
+  .mobile-menu__heading {
+    margin: 0 0 var(--space-2);
+    padding: 0 var(--space-2);
+    font-size: var(--text-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+
+  .mobile-menu__list {
+    margin: 0 0 var(--space-4);
+    padding: 0;
+    list-style: none;
+  }
+
+  .mobile-menu__list--main {
+    margin-bottom: 0;
+    padding-top: var(--space-2);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mobile-menu__list li {
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .mobile-menu__list a {
+    display: block;
+    min-height: 3rem;
+    padding: var(--space-3) var(--space-2);
+    color: var(--color-text);
+    text-decoration: none;
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  .mobile-menu__list a:hover,
+  .mobile-menu__list a:focus-visible {
+    color: var(--color-primary);
+    background: var(--color-primary-soft);
+    outline: none;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-menu {
+      display: none;
+    }
+  }
+</style>

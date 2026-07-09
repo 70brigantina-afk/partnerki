@@ -1,0 +1,29 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import { categories } from '@/config/categories';
+---
+
+<BaseLayout
+  title="Страница не найдена"
+  description="Запрошенная страница не найдена."
+  noindex={true}
+>
+  <div class="container" style="padding: 4rem 0; text-align: center;">
+    <h1>404 — страница не найдена</h1>
+    <p style="color: var(--color-text-muted); margin-bottom: 2rem;">
+      Возможно, страница была перемещена или ещё не опубликована.
+    </p>
+    <a class="btn btn--primary" href="/">На главную</a>
+    <div
+      style="margin-top: 2rem; display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: center;"
+    >
+      {
+        categories.map((c) => (
+          <a class="btn btn--ghost" href={`/${c.slug}/`}>
+            {c.name}
+          </a>
+        ))
+      }
+    </div>
+  </div>
+</BaseLayout>

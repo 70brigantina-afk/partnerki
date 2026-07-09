@@ -1,0 +1,16 @@
+---
+interface Props {
+  variant?: 'free' | 'paid' | 'trial' | 'demo' | 'default';
+}
+
+const { variant = 'default' } = Astro.props;
+const classMap = {
+  free: 'badge badge--free',
+  paid: 'badge badge--paid',
+  trial: 'badge badge--trial',
+  demo: 'badge badge--demo',
+  default: 'badge',
+};
+---
+
+<span class={classMap[variant]}><slot /></span>

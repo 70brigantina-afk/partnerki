@@ -1,0 +1,37 @@
+---
+import CategoryPageLayout from '@/components/CategoryPageLayout.astro';
+import { landingPages } from '@/config/landing-pages';
+import { getCategoryBySlug } from '@/config/categories';
+import { getPublicCourses } from '@/utils/courses';
+
+export async function getStaticPaths() {
+  return landingPages.map((page) => ({
+    params: { category: page.categorySlug, landing: page.slug },
+    props: { page },
+  }));
+}
+
+const { page } = Astro.props;
+const baseCategory = getCategoryBySlug(page.categorySlug)!;
+const allCourses = await getPublicCourses();
+const courses = allCourses.filter((c) => page.filter(c.data));
+const noindex = courses.every((c) => c.data.status === 'draft');
+const category = {
+  ...baseCategory,
+  seoTitle: page.seoTitle,
+  seoDescription: page.seoDescription,
+  name: page.title,
+  fullDescription: page.intro,
+};
+---
+
+<CategoryPageLayout
+  category={category}
+  courses={courses}
+  allCourses={allCourses}
+  title={page.title}
+  description={page.description}
+  intro={page.intro}
+  faq={page.faq}
+  noindex={noindex}
+/>

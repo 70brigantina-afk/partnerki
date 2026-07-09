@@ -1,0 +1,34 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+import CourseCard from './CourseCard.astro';
+
+interface Props {
+  courses: CourseEntry[];
+  currentSlug: string;
+  title?: string;
+  limit?: number;
+}
+
+const {
+  courses,
+  currentSlug,
+  title = 'Похожие программы',
+  limit = 3,
+} = Astro.props;
+const related = courses.filter((c) => c.slug !== currentSlug).slice(0, limit);
+---
+
+{
+  related.length > 0 && (
+    <section class="related-courses section--alt">
+      <div class="container">
+        <h2 class="section__title">{title}</h2>
+        <div class="grid grid--3">
+          {related.map((course) => (
+            <CourseCard course={course} showCompare={false} />
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

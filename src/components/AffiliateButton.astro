@@ -1,0 +1,98 @@
+---
+interface Props {
+  courseId: string;
+  courseTitle: string;
+  category: string;
+  school: string;
+  isFree: boolean;
+  affiliateUrl?: string;
+  buttonType?: 'card' | 'detail' | 'comparison';
+  position?: number;
+  label?: string;
+  size?: 'sm' | 'md';
+  fullWidth?: boolean;
+}
+
+const {
+  courseId,
+  courseTitle,
+  category,
+  school,
+  isFree,
+  affiliateUrl,
+  buttonType = 'detail',
+  position,
+  label = 'Посмотреть программу и зарегистрироваться',
+  size = 'md',
+  fullWidth = false,
+} = Astro.props;
+
+const hasLink = affiliateUrl && affiliateUrl.length > 0;
+const btnClass = `btn btn--primary affiliate-btn ${size === 'sm' ? 'affiliate-btn--sm' : ''} ${fullWidth ? 'affiliate-btn--full' : ''} ${!hasLink ? 'btn--disabled' : ''}`;
+---
+
+{
+  hasLink ? (
+    <a
+      class={btnClass}
+      href={affiliateUrl}
+      target="_blank"
+      rel="sponsored noopener noreferrer"
+      data-affiliate-link
+      data-course-id={courseId}
+      data-course-title={courseTitle}
+      data-category={category}
+      data-school={school}
+      data-is-free={String(isFree)}
+      data-button-type={buttonType}
+      data-position={position ?? ''}
+    >
+      {label}
+    </a>
+  ) : (
+    <button
+      class={btnClass}
+      type="button"
+      disabled
+      title="Ссылка будет добавлена после проверки программы"
+    >
+      Ссылка будет добавлена после проверки программы
+    </button>
+  )
+}
+
+<script>
+  import { trackAffiliateClick } from '@/utils/analytics';
+  import { getStoredUtm } from '@/utils/utm';
+
+  document.querySelectorAll('[data-affiliate-link]').forEach((el) => {
+    el.addEventListener('click', () => {
+      const link = el as HTMLAnchorElement;
+      trackAffiliateClick({
+        courseId: link.dataset.courseId ?? '',
+        courseTitle: link.dataset.courseTitle ?? '',
+        category: link.dataset.category ?? '',
+        school: link.dataset.school ?? '',
+        isFree: link.dataset.isFree === 'true',
+        pageUrl: window.location.href,
+        utm: getStoredUtm(),
+        cardPosition: link.dataset.position
+          ? Number(link.dataset.position)
+          : undefined,
+        buttonType:
+          (link.dataset.buttonType as 'card' | 'detail' | 'comparison') ??
+          'detail',
+      });
+    });
+  });
+</script>
+
+<style>
+  .affiliate-btn--sm {
+    padding: 0.5rem 0.85rem;
+    font-size: var(--text-sm);
+  }
+  .affiliate-btn--full {
+    width: 100%;
+  }
+</style>

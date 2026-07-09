@@ -1,0 +1,65 @@
+<button
+  class="mobile-menu__toggle"
+  type="button"
+  aria-label="Открыть меню"
+  aria-expanded="false"
+  aria-controls="mobile-menu-panel"
+  id="mobile-menu-toggle"
+>
+  <svg
+    class="mobile-menu__icon-menu"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M4 7h16M4 12h16M4 17h16"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"></path>
+  </svg>
+  <svg
+    class="mobile-menu__icon-close is-hidden"
+    width="24"
+    height="24"
+    viewBox="0 0 24 24"
+    fill="none"
+    aria-hidden="true"
+  >
+    <path
+      d="M6 6l12 12M18 6L6 18"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"></path>
+  </svg>
+</button>
+
+<style>
+  .mobile-menu__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    background: none;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    color: var(--color-text);
+    flex-shrink: 0;
+  }
+
+  .mobile-menu__icon-close.is-hidden,
+  .mobile-menu__icon-menu.is-hidden {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .mobile-menu__toggle {
+      display: none;
+    }
+  }
+</style>

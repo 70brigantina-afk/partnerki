@@ -1,0 +1,37 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+import CourseCard from './CourseCard.astro';
+
+interface Props {
+  courses: CourseEntry[];
+  emptyMessage?: string;
+}
+
+const {
+  courses,
+  emptyMessage = 'Программы по выбранным фильтрам не найдены.',
+} = Astro.props;
+---
+
+{
+  courses.length > 0 ? (
+    <div class="course-grid grid grid--2 grid--equal" id="course-grid">
+      {courses.map((course, i) => (
+        <CourseCard course={course} position={i + 1} />
+      ))}
+    </div>
+  ) : (
+    <p class="course-grid__empty">{emptyMessage}</p>
+  )
+}
+
+<style>
+  .course-grid__empty {
+    padding: var(--space-8);
+    text-align: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+  }
+</style>

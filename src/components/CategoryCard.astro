@@ -1,0 +1,123 @@
+---
+import type { Category } from '@/config/categories';
+import CategoryIcon from './CategoryIcon.astro';
+
+interface Props {
+  category: Category;
+  courseCount: number;
+  compact?: boolean;
+}
+
+const { category, courseCount, compact = false } = Astro.props;
+const countLabel =
+  courseCount === 1 ? 'программа' : courseCount < 5 ? 'программы' : 'программ';
+---
+
+<article
+  class={`category-card card card--interactive ${category.theme} ${compact ? 'category-card--compact' : ''}`}
+>
+  <div class="category-card__header">
+    <div class="category-card__icon-wrap">
+      <CategoryIcon icon={category.icon} size={compact ? 22 : 28} />
+    </div>
+    {
+      !compact && (
+        <span class="category-card__count">
+          {courseCount} {countLabel}
+        </span>
+      )
+    }
+  </div>
+  <div class={`card__body ${compact ? 'card__body--compact' : ''}`}>
+    <h2 class="card__title">
+      <a href={`/${category.slug}/`}>{category.name}</a>
+    </h2>
+    {
+      !compact && (
+        <p class="card__text line-clamp-3">{category.shortDescription}</p>
+      )
+    }
+    {
+      compact ? (
+        <a class="category-card__link" href={`/${category.slug}/`}>
+          Перейти <span aria-hidden="true">→</span>
+        </a>
+      ) : (
+        <>
+          <p class="category-card__count category-card__count--body">
+            {courseCount} {countLabel}
+          </p>
+          <a class="btn btn--secondary btn--arrow" href={`/${category.slug}/`}>
+            Смотреть обучения
+          </a>
+        </>
+      )
+    }
+  </div>
+</article>
+
+<style>
+  .category-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .category-card__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-5) var(--space-5) 0;
+    min-height: 4.5rem;
+    background: linear-gradient(135deg, var(--cat-soft) 0%, transparent 100%);
+  }
+  .category-card--compact .category-card__header {
+    padding: var(--space-3) var(--space-4) 0;
+    min-height: auto;
+  }
+  .category-card__icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    color: var(--cat-accent);
+    box-shadow: var(--shadow-xs);
+  }
+  .category-card--compact .category-card__icon-wrap {
+    width: 2.25rem;
+    height: 2.25rem;
+  }
+  .category-card__count {
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--cat-accent);
+  }
+  .category-card__count--body {
+    margin: 0 0 var(--space-4);
+  }
+  .category-card .card__body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .category-card .card__text {
+    flex: 1;
+    margin-bottom: var(--space-4);
+  }
+  .category-card__link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--cat-accent);
+    text-decoration: none;
+    margin-top: auto;
+  }
+  .category-card__link:hover {
+    text-decoration: none;
+    gap: 0.4rem;
+  }
+</style>

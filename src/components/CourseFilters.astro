@@ -1,0 +1,422 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+
+interface Props {
+  courses: CourseEntry[];
+  totalCount?: number;
+}
+
+const { courses, totalCount = courses.length } = Astro.props;
+
+const filterDefs = [
+  {
+    id: 'free',
+    label: 'Бесплатные',
+    primary: true,
+    test: (c: CourseEntry) => c.data.isFree,
+  },
+  {
+    id: 'paid',
+    label: 'Платные',
+    primary: true,
+    test: (c: CourseEntry) => !c.data.isFree,
+  },
+  {
+    id: 'trial',
+    label: 'Пробный урок',
+    primary: true,
+    test: (c: CourseEntry) => c.data.hasFreeTrial,
+  },
+  {
+    id: 'beginner',
+    label: 'Для начинающих',
+    primary: true,
+    test: (c: CourseEntry) => c.data.level === 'beginner',
+  },
+  {
+    id: 'feedback',
+    label: 'С обратной связью',
+    primary: true,
+    test: (c: CourseEntry) => c.data.feedback,
+  },
+  {
+    id: 'intermediate',
+    label: 'Средний уровень',
+    primary: false,
+    test: (c: CourseEntry) => c.data.level === 'intermediate',
+  },
+  {
+    id: 'advanced',
+    label: 'Продвинутый',
+    primary: false,
+    test: (c: CourseEntry) => c.data.level === 'advanced',
+  },
+  {
+    id: 'profession',
+    label: 'Профессия',
+    primary: false,
+    test: (c: CourseEntry) =>
+      c.data.type === 'profession' || c.data.tags.includes('profession'),
+  },
+  {
+    id: 'skill',
+    label: 'Отдельный навык',
+    primary: false,
+    test: (c: CourseEntry) => c.data.type === 'skill',
+  },
+  {
+    id: 'work',
+    label: 'Для работы',
+    primary: false,
+    test: (c: CourseEntry) => c.data.tags.includes('work'),
+  },
+  {
+    id: 'income',
+    label: 'Для заработка',
+    primary: false,
+    test: (c: CourseEntry) => c.data.goals.includes('income'),
+  },
+  {
+    id: 'business',
+    label: 'Для бизнеса',
+    primary: false,
+    test: (c: CourseEntry) => c.data.goals.includes('business'),
+  },
+  {
+    id: 'self',
+    label: 'Для личного развития',
+    primary: false,
+    test: (c: CourseEntry) => c.data.goals.includes('self-development'),
+  },
+  {
+    id: 'certificate',
+    label: 'С сертификатом',
+    primary: false,
+    test: (c: CourseEntry) => c.data.certificate,
+  },
+  {
+    id: 'short',
+    label: 'Короткие',
+    primary: false,
+    test: (c: CourseEntry) => c.data.durationCategory === 'short',
+  },
+  {
+    id: 'long',
+    label: 'Длительные',
+    primary: false,
+    test: (c: CourseEntry) => c.data.durationCategory === 'long',
+  },
+];
+
+const availableFilters = filterDefs.filter((f) => courses.some(f.test));
+const primaryFilters = availableFilters.filter((f) => f.primary);
+const secondaryFilters = availableFilters.filter((f) => !f.primary);
+const slugToFilters = Object.fromEntries(
+  courses.map((c) => [
+    c.slug,
+    availableFilters.filter((f) => f.test(c)).map((f) => f.id),
+  ]),
+);
+const hasSecondary = secondaryFilters.length > 0;
+---
+
+<div class="filter-bar" data-filter-bar>
+  <div class="filter-bar__row">
+    <div class="filter-bar__chips" role="group" aria-label="Фильтры программ">
+      {
+        primaryFilters.map((f) => (
+          <button
+            class="filter-chip"
+            type="button"
+            data-filter-chip
+            value={f.id}
+            aria-pressed="false"
+          >
+            {f.label}
+          </button>
+        ))
+      }
+      {
+        hasSecondary && (
+          <button
+            class="filter-chip filter-chip--more"
+            type="button"
+            data-filter-more
+          >
+            Ещё фильтры
+          </button>
+        )
+      }
+    </div>
+    <div class="filter-bar__meta">
+      <span class="filter-bar__count" data-filter-count>
+        {totalCount}
+        {
+          totalCount === 1
+            ? 'программа'
+            : totalCount < 5
+              ? 'программы'
+              : 'программ'
+        }
+      </span>
+      <label class="filter-bar__sort">
+        <span class="sr-only">Сортировка</span>
+        <select data-sort-select>
+          <option value="recommended">Рекомендуемые</option>
+          <option value="free-first">Сначала бесплатные</option>
+          <option value="paid-first">Сначала платные</option>
+          <option value="priority">По популярности</option>
+          <option value="duration">По длительности</option>
+          <option value="updated">Недавно обновлённые</option>
+        </select>
+      </label>
+    </div>
+  </div>
+
+  {
+    hasSecondary && (
+      <div class="filter-bar__secondary" data-filter-secondary hidden>
+        <div class="filter-bar__chips">
+          {secondaryFilters.map((f) => (
+            <button
+              class="filter-chip"
+              type="button"
+              data-filter-chip
+              value={f.id}
+              aria-pressed="false"
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      </div>
+    )
+  }
+
+  <div class="filter-bar__actions">
+    <button class="filter-bar__clear" type="button" data-filter-clear hidden>
+      Очистить фильтры
+    </button>
+    <button
+      class="filter-bar__mobile-toggle hide-desktop"
+      type="button"
+      data-filter-mobile-toggle
+    >
+      Фильтры и сортировка
+    </button>
+  </div>
+</div>
+
+<script is:inline define:vars={{ slugToFilters, totalCount }}>
+  const sortFns = {
+    recommended: (a, b) => {
+      const ar = a.dataset.recommended === 'true' ? 1 : 0;
+      const br = b.dataset.recommended === 'true' ? 1 : 0;
+      if (br !== ar) return br - ar;
+      return Number(b.dataset.priority) - Number(a.dataset.priority);
+    },
+    'free-first': (a, b) => Number(b.dataset.free) - Number(a.dataset.free),
+    'paid-first': (a, b) => Number(a.dataset.free) - Number(b.dataset.free),
+    priority: (a, b) => Number(b.dataset.priority) - Number(a.dataset.priority),
+    duration: (a, b) =>
+      Number(a.dataset.durationOrder) - Number(b.dataset.durationOrder),
+    updated: (a, b) => Number(b.dataset.updated) - Number(a.dataset.updated),
+  };
+
+  function getActiveFilters() {
+    return Array.from(
+      document.querySelectorAll('[data-filter-chip].is-active'),
+    ).map((el) => el.value);
+  }
+
+  function updateUI() {
+    const checked = getActiveFilters();
+    const cards = document.querySelectorAll('#course-grid .course-card');
+    let visible = 0;
+    cards.forEach((card) => {
+      const slug = card.getAttribute('data-slug');
+      const tags = slugToFilters[slug] ?? [];
+      const show =
+        checked.length === 0 || checked.every((id) => tags.includes(id));
+      card.style.display = show ? '' : 'none';
+      if (show) visible++;
+    });
+
+    const countEl = document.querySelector('[data-filter-count]');
+    if (countEl) {
+      const word =
+        visible === 1 ? 'программа' : visible < 5 ? 'программы' : 'программ';
+      countEl.textContent = `${visible} ${word}`;
+    }
+
+    const empty = document.querySelector('.course-grid__empty-dynamic');
+    if (empty) empty.hidden = visible > 0;
+
+    const clearBtn = document.querySelector('[data-filter-clear]');
+    if (clearBtn) clearBtn.hidden = checked.length === 0;
+  }
+
+  document.querySelectorAll('[data-filter-chip]').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      chip.classList.toggle('is-active');
+      chip.setAttribute('aria-pressed', chip.classList.contains('is-active'));
+      updateUI();
+    });
+  });
+
+  document
+    .querySelector('[data-filter-clear]')
+    ?.addEventListener('click', () => {
+      document.querySelectorAll('[data-filter-chip].is-active').forEach((c) => {
+        c.classList.remove('is-active');
+        c.setAttribute('aria-pressed', 'false');
+      });
+      updateUI();
+    });
+
+  document
+    .querySelector('[data-filter-more]')
+    ?.addEventListener('click', (e) => {
+      const btn = e.currentTarget;
+      const panel = document.querySelector('[data-filter-secondary]');
+      const open = panel?.hasAttribute('hidden');
+      if (open) {
+        panel?.removeAttribute('hidden');
+        btn.textContent = 'Скрыть фильтры';
+      } else {
+        panel?.setAttribute('hidden', '');
+        btn.textContent = 'Ещё фильтры';
+      }
+    });
+
+  document
+    .querySelector('[data-filter-mobile-toggle]')
+    ?.addEventListener('click', () => {
+      document
+        .querySelector('[data-filter-bar]')
+        ?.classList.toggle('is-mobile-open');
+    });
+
+  document.querySelectorAll('[data-sort-select]').forEach((select) => {
+    select.addEventListener('change', (e) => {
+      const value = e.target.value;
+      const grid = document.getElementById('course-grid');
+      if (!grid) return;
+      const items = Array.from(grid.children);
+      const fn = sortFns[value] ?? sortFns.recommended;
+      items.sort(fn).forEach((el) => grid.appendChild(el));
+    });
+  });
+</script>
+
+<style>
+  .filter-bar {
+    margin-bottom: var(--space-5);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .filter-bar__row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+  .filter-bar__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+  .filter-chip {
+    padding: 0.4rem 0.85rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-family: var(--font-body);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    transition: all var(--transition);
+    white-space: nowrap;
+  }
+  .filter-chip:hover {
+    border-color: var(--color-primary-muted);
+    color: var(--color-primary);
+  }
+  .filter-chip.is-active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+  }
+  .filter-chip--more {
+    border-style: dashed;
+  }
+  .filter-bar__meta {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-shrink: 0;
+  }
+  .filter-bar__count {
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+  }
+  .filter-bar__sort select {
+    padding: 0.4rem 0.65rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font: inherit;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    cursor: pointer;
+  }
+  .filter-bar__secondary {
+    margin-top: var(--space-3);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border);
+  }
+  .filter-bar__actions {
+    margin-top: var(--space-2);
+  }
+  .filter-bar__clear {
+    padding: 0;
+    background: none;
+    border: none;
+    font-size: var(--text-sm);
+    color: var(--color-primary);
+    cursor: pointer;
+    text-decoration: underline;
+  }
+  .filter-bar__mobile-toggle {
+    width: 100%;
+    padding: 0.65rem;
+    background: var(--color-bg);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: var(--text-sm);
+    cursor: pointer;
+  }
+  @media (max-width: 767px) {
+    .filter-bar__row {
+      display: none;
+    }
+    .filter-bar.is-mobile-open .filter-bar__row {
+      display: flex;
+    }
+    .filter-bar.is-mobile-open .filter-bar__mobile-toggle {
+      display: none;
+    }
+  }
+  @media (min-width: 768px) {
+    .filter-bar__mobile-toggle {
+      display: none;
+    }
+  }
+</style>

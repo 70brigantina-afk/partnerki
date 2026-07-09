@@ -1,0 +1,373 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CategoryCard from '@/components/CategoryCard.astro';
+import CourseCard from '@/components/CourseCard.astro';
+import Search from '@/components/Search.astro';
+import HeroIllustration from '@/components/HeroIllustration.astro';
+import DemoBanner from '@/components/DemoBanner.astro';
+import FAQ from '@/components/FAQ.astro';
+import { siteConfig } from '@/config/site';
+import { categories } from '@/config/categories';
+import {
+  getPublicCourses,
+  getCoursesByCategory,
+  getFeaturedCourses,
+  getFreeCourses,
+  getSearchIndex,
+} from '@/utils/courses';
+
+const allCourses = await getPublicCourses();
+const searchIndex = await getSearchIndex();
+const featured = getFeaturedCourses(allCourses).slice(0, 8);
+const hasDemo = allCourses.some((c) => c.data.isDemo);
+const freeByCategory = categories.map((cat) => {
+  const catCourses = getCoursesByCategory(allCourses, cat.id);
+  const free = getFreeCourses(catCourses)[0];
+  return { category: cat, course: free };
+});
+
+const homeFaq = [
+  {
+    question: 'Как выбрать подходящее обучение?',
+    answer:
+      'Определите цель, уровень подготовки и формат. Используйте фильтры на страницах направлений или пройдите короткий подбор.',
+  },
+  {
+    question: 'Есть ли на сайте бесплатные программы?',
+    answer: 'Да, мы отдельно отмечаем бесплатные программы и пробные уроки.',
+  },
+  {
+    question: 'Как перейти на страницу курса?',
+    answer:
+      'Откройте карточку программы и нажмите кнопку перехода на официальный сайт, когда партнёрская ссылка добавлена и проверена.',
+  },
+  {
+    question: 'Почему стоимость может измениться?',
+    answer:
+      'Организаторы могут менять цены и условия. Перед регистрацией проверяйте актуальную информацию на их сайте.',
+  },
+  {
+    question: 'Получает ли сайт вознаграждение за переходы?',
+    answer:
+      'Да, по партнёрским ссылкам проект может получать вознаграждение без увеличения стоимости для пользователя.',
+  },
+  {
+    question: 'Проверяется ли актуальность информации?',
+    answer:
+      'Мы указываем дату последней проверки каждой программы и регулярно обновляем каталог.',
+  },
+];
+
+const articles = [
+  {
+    title: 'Лучшие бесплатные курсы',
+    note: 'Материал будет опубликован позже',
+  },
+  {
+    title: 'Обучение для начинающих',
+    note: 'Материал будет опубликован позже',
+  },
+  { title: 'Сравнение программ', note: 'Материал будет опубликован позже' },
+  {
+    title: 'Как выбрать онлайн-курс',
+    note: 'Материал будет опубликован позже',
+  },
+  {
+    title: 'Профессии для удалённой работы',
+    note: 'Материал будет опубликован позже',
+  },
+  { title: 'Обучение с нуля', note: 'Материал будет опубликован позже' },
+];
+---
+
+<BaseLayout
+  title={siteConfig.seo.defaultTitle}
+  description={siteConfig.seo.defaultDescription}
+  schema={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'WebSite',
+      name: siteConfig.name,
+      description: siteConfig.description,
+      url: Astro.site,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: siteConfig.name,
+      url: Astro.site,
+      email: siteConfig.email,
+    },
+  ]}
+>
+  <section class="hero">
+    <div class="container hero__grid">
+      <div class="hero__content">
+        <span class="hero__eyebrow">Навигатор онлайн-обучения</span>
+        <h1 class="hero__title">Найдите обучение под вашу цель</h1>
+        <p class="hero__subtitle">
+          Сравнивайте бесплатные интенсивы, пробные уроки и полноценные
+          образовательные программы по востребованным направлениям
+        </p>
+        <div class="hero__actions">
+          <a class="btn btn--primary btn--lg" href="#directions"
+            >Выбрать направление</a
+          >
+          <a class="btn btn--secondary btn--lg" href="/podbor-obucheniya/"
+            >Подобрать обучение</a
+          >
+        </div>
+        <Search searchIndex={searchIndex} variant="hero" />
+        <ul class="hero__benefits">
+          <li>Бесплатные и платные программы</li>
+          <li>Удобное сравнение</li>
+          <li>Проверка актуальности информации</li>
+        </ul>
+      </div>
+      <div class="hero__visual hide-mobile">
+        <HeroIllustration />
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact" id="directions">
+    <div class="container">
+      <h2 class="section__title">Шесть основных направлений</h2>
+      <p class="section__subtitle">
+        Выберите тему, которая соответствует вашей цели
+      </p>
+      <div class="grid grid--categories">
+        {
+          categories.map((cat) => (
+            <CategoryCard
+              category={cat}
+              courseCount={getCoursesByCategory(allCourses, cat.id).length}
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact section--alt">
+    <div class="container">
+      <h2 class="section__title">Как мы помогаем выбирать обучение</h2>
+      <div class="trust-grid">
+        <div class="trust-item">
+          <div class="trust-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              ><path
+                d="M4 6h16M4 12h10M4 18h6"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+          </div>
+          <h3>Структурируем по направлениям</h3>
+          <p>
+            Шесть тематических разделов помогают быстро сузить поиск и не
+            потеряться в каталоге.
+          </p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              ><path
+                d="M12 2v20M2 12h20"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+          </div>
+          <h3>Бесплатные и платные варианты</h3>
+          <p>
+            Отмечаем формат обучения, чтобы вы могли начать без оплаты или
+            выбрать полноценную программу.
+          </p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              ><circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.5"></circle><path
+                d="M12 7v5l3 2"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+          </div>
+          <h3>Дата последней проверки</h3>
+          <p>
+            У каждой программы указана дата проверки — вы видите, насколько
+            свежая информация.
+          </p>
+        </div>
+        <div class="trust-item">
+          <div class="trust-item__icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+              ><path
+                d="M12 3l2 6h6l-5 4 2 6-5-4-5 4 2-6-5-4h6z"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linejoin="round"></path></svg
+            >
+          </div>
+          <h3>Честное партнёрское раскрытие</h3>
+          <p>
+            Мы открыто сообщаем о партнёрских ссылках — это не увеличивает
+            стоимость для вас.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact">
+    <div class="container">
+      <h2 class="section__title">Начните бесплатно</h2>
+      <p class="section__subtitle">
+        По одной программе из каждого направления — реальные записи появятся
+        позже
+      </p>
+      {hasDemo && <DemoBanner />}
+      <div class="grid grid--3 grid--equal">
+        {
+          freeByCategory.map(({ category, course }) =>
+            course ? (
+              <CourseCard course={course} />
+            ) : (
+              <div class="card card__body">
+                <h3 class="card__title">{category.name}</h3>
+                <p class="card__text">
+                  Программы появятся после добавления активных записей.
+                </p>
+              </div>
+            ),
+          )
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact section--alt">
+    <div class="container">
+      <h2 class="section__title">Популярные программы</h2>
+      <p class="section__subtitle">
+        Программы с отметкой «рекомендуемые» из каталога
+      </p>
+      {
+        featured.length > 0 ? (
+          <div class="grid grid--3 grid--equal">
+            {featured.map((course) => (
+              <CourseCard course={course} />
+            ))}
+          </div>
+        ) : (
+          <p class="muted">
+            Популярные программы появятся после публикации активных записей.
+          </p>
+        )
+      }
+    </div>
+  </section>
+
+  <section class="section section--compact">
+    <div class="container">
+      <h2 class="section__title">Как работает подбор</h2>
+      <p class="section__subtitle">Три шага от цели до выбора программы</p>
+      <div class="steps">
+        <div class="step">
+          <div class="step__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              ><circle
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="1.5"></circle><path
+                d="M12 8v4l3 2"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+          </div>
+          <h3>Выберите направление</h3>
+          <p>Определите тему и уровень подготовки</p>
+        </div>
+        <div class="step">
+          <div class="step__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              ><path
+                d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"></path></svg
+            >
+          </div>
+          <h3>Сравните варианты</h3>
+          <p>Используйте фильтры и сравнение до трёх программ</p>
+        </div>
+        <div class="step">
+          <div class="step__icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+              ><path
+                d="M14 3h7v7M10 14L21 3M5 12v7h7"
+                stroke="currentColor"
+                stroke-width="1.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path></svg
+            >
+          </div>
+          <h3>Перейдите на сайт школы</h3>
+          <p>Изучите подробности и зарегистрируйтесь у организатора</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact section--alt">
+    <div class="container">
+      <div class="cta-block">
+        <h2>Не знаете, с чего начать?</h2>
+        <p>
+          Ответьте на несколько вопросов и получите подходящие варианты обучения
+        </p>
+        <a class="btn btn--primary btn--lg" href="/podbor-obucheniya/"
+          >Подобрать обучение</a
+        >
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact">
+    <div class="container">
+      <h2 class="section__title">Полезные материалы</h2>
+      <div class="grid grid--3">
+        {
+          articles.map((a) => (
+            <article class="card card__body">
+              <h3 class="card__title">{a.title}</h3>
+              <p class="card__text">{a.note}</p>
+            </article>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--compact section--alt">
+    <div class="container">
+      <FAQ items={homeFaq} />
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .muted {
+    color: var(--color-text-muted);
+  }
+</style>

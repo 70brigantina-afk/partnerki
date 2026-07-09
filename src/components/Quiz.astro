@@ -1,0 +1,221 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+
+interface Props {
+  courses: CourseEntry[];
+}
+
+const { courses } = Astro.props;
+const courseData = courses.map((c) => ({
+  id: c.data.id,
+  slug: c.slug,
+  title: c.data.title,
+  category: c.data.category,
+  isFree: c.data.isFree,
+  hasFreeTrial: c.data.hasFreeTrial,
+  level: c.data.level,
+  format: c.data.format,
+  duration: c.data.duration ?? '',
+  feedback: c.data.feedback,
+  certificate: c.data.certificate,
+  audience: c.data.audience,
+  tags: c.data.tags,
+  goals: c.data.goals,
+  durationCategory: c.data.durationCategory ?? '',
+  recommended: c.data.recommended,
+  priority: c.data.priority,
+}));
+---
+
+<div class="quiz" data-quiz>
+  <form class="quiz__form" id="quiz-form">
+    <fieldset class="quiz__step" data-step="1">
+      <legend>1. Что вы хотите получить?</legend>
+      <label
+        ><input type="radio" name="goal" value="profession" required /> Новую профессию</label
+      >
+      <label
+        ><input type="radio" name="goal" value="income" /> Дополнительный доход</label
+      >
+      <label
+        ><input type="radio" name="goal" value="qualification" /> Повышение квалификации</label
+      >
+      <label
+        ><input type="radio" name="goal" value="self-development" /> Развитие для
+        себя</label
+      >
+      <label
+        ><input type="radio" name="goal" value="business" /> Помощь в бизнесе</label
+      >
+      <label
+        ><input type="radio" name="goal" value="child-education" /> Обучение ребёнка</label
+      >
+    </fieldset>
+
+    <fieldset class="quiz__step" data-step="2">
+      <legend>2. Какое направление вас интересует?</legend>
+      <label
+        ><input type="radio" name="category" value="neyroseti" required /> Нейросети
+        и ИИ</label
+      >
+      <label
+        ><input type="radio" name="category" value="marketing" /> Маркетинг</label
+      >
+      <label
+        ><input type="radio" name="category" value="psihologiya" /> Психология</label
+      >
+      <label
+        ><input type="radio" name="category" value="zdorove" /> Здоровье и питание</label
+      >
+      <label><input type="radio" name="category" value="dizayn" /> Дизайн</label
+      >
+      <label
+        ><input type="radio" name="category" value="angliyskiy" /> Английский язык</label
+      >
+      <label><input type="radio" name="category" value="any" /> Любое</label>
+    </fieldset>
+
+    <fieldset class="quiz__step" data-step="3">
+      <legend>3. Какой у вас уровень?</legend>
+      <label
+        ><input type="radio" name="level" value="beginner" required /> Никогда не
+        изучал</label
+      >
+      <label
+        ><input type="radio" name="level" value="intermediate" /> Есть базовые знания</label
+      >
+      <label
+        ><input type="radio" name="level" value="advanced" /> Уже есть опыт</label
+      >
+    </fieldset>
+
+    <fieldset class="quiz__step" data-step="4">
+      <legend>4. Какой формат подходит?</legend>
+      <label
+        ><input type="radio" name="formatPref" value="free" required /> Бесплатное
+        обучение</label
+      >
+      <label
+        ><input type="radio" name="formatPref" value="trial" /> Бесплатный пробный
+        урок</label
+      >
+      <label
+        ><input type="radio" name="formatPref" value="paid" /> Готов рассмотреть платную
+        программу</label
+      >
+    </fieldset>
+
+    <fieldset class="quiz__step" data-step="5">
+      <legend>5. Сколько времени вы готовы учиться?</legend>
+      <label
+        ><input type="radio" name="duration" value="short" required /> Короткие программы</label
+      >
+      <label
+        ><input type="radio" name="duration" value="long" /> Длительные программы</label
+      >
+      <label><input type="radio" name="duration" value="any" /> Не важно</label>
+    </fieldset>
+
+    <fieldset class="quiz__step" data-step="6">
+      <legend>6. Нужна ли обратная связь?</legend>
+      <label
+        ><input type="radio" name="feedback" value="yes" required /> Да</label
+      >
+      <label><input type="radio" name="feedback" value="no" /> Нет</label>
+      <label><input type="radio" name="feedback" value="any" /> Не важно</label>
+    </fieldset>
+
+    <button class="btn btn--primary" type="submit">Показать результаты</button>
+  </form>
+
+  <div class="quiz__results" id="quiz-results" hidden>
+    <h2>Подходящие программы</h2>
+    <div id="quiz-results-list"></div>
+  </div>
+</div>
+
+<script is:inline define:vars={{ courseData }}>
+  const form = document.getElementById('quiz-form');
+  const results = document.getElementById('quiz-results');
+  const list = document.getElementById('quiz-results-list');
+
+  function score(course, answers) {
+    let s = 0;
+    if (answers.category !== 'any' && course.category === answers.category)
+      s += 3;
+    if (course.goals.includes(answers.goal)) s += 3;
+    if (course.level === answers.level) s += 2;
+    if (answers.formatPref === 'free' && course.isFree) s += 2;
+    if (answers.formatPref === 'trial' && course.hasFreeTrial) s += 2;
+    if (answers.formatPref === 'paid' && !course.isFree) s += 1;
+    if (
+      answers.duration !== 'any' &&
+      course.durationCategory === answers.duration
+    )
+      s += 1;
+    if (answers.feedback === 'yes' && course.feedback) s += 1;
+    if (answers.feedback === 'no' && !course.feedback) s += 1;
+    if (course.recommended) s += 1;
+    s += course.priority / 20;
+    return s;
+  }
+
+  form?.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const answers = Object.fromEntries(fd.entries());
+    const ranked = courseData
+      .map((c) => ({ ...c, score: score(c, answers) }))
+      .filter((c) => c.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+
+    if (!ranked.length) {
+      list.innerHTML =
+        '<p>По вашим ответам подходящих активных программ пока нет. Попробуйте изменить критерии или посмотрите каталог направлений.</p>';
+    } else {
+      list.innerHTML = ranked
+        .map(
+          (c) => `
+        <article class="quiz__result card">
+          <div class="card__body">
+            <h3><a href="/course/${c.slug}/">${c.title}</a></h3>
+            <p>${c.isFree ? 'Бесплатно' : 'Платно'} · ${c.level}</p>
+            <a class="btn btn--secondary" href="/course/${c.slug}/">Посмотреть подробности</a>
+          </div>
+        </article>`,
+        )
+        .join('');
+    }
+    results.hidden = false;
+    results.scrollIntoView({ behavior: 'smooth' });
+  });
+</script>
+
+<style>
+  .quiz__form {
+    display: grid;
+    gap: var(--space-6);
+  }
+  .quiz__step {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+    background: var(--color-surface);
+  }
+  .quiz__step legend {
+    font-weight: 600;
+    margin-bottom: var(--space-3);
+  }
+  .quiz__step label {
+    display: block;
+    margin-bottom: var(--space-2);
+    cursor: pointer;
+  }
+  .quiz__results {
+    margin-top: var(--space-8);
+  }
+  .quiz__result {
+    margin-bottom: var(--space-4);
+  }
+</style>

@@ -1,0 +1,222 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+import { formatLevel, formatFormat } from '@/utils/courses';
+import Badge from './Badge.astro';
+import AffiliateButton from './AffiliateButton.astro';
+import FavoriteButton from './FavoriteButton.astro';
+import CompareButton from './CompareButton.astro';
+import CoursePlaceholder from './CoursePlaceholder.astro';
+import { getCategoryById } from '@/config/categories';
+
+interface Props {
+  course: CourseEntry;
+  position?: number;
+  showCompare?: boolean;
+}
+
+const { course, position, showCompare = true } = Astro.props;
+const d = course.data;
+const slug = course.slug;
+const category = getCategoryById(d.category);
+const schoolOrAuthor = d.school || d.author || 'Организатор уточняется';
+
+const badges = [
+  d.isDemo && { variant: 'demo' as const, label: 'Демо' },
+  d.isFree && { variant: 'free' as const, label: 'Бесплатно' },
+  !d.isFree && !d.isDemo && { variant: 'paid' as const, label: 'Платно' },
+  d.hasFreeTrial && { variant: 'trial' as const, label: 'Пробный урок' },
+]
+  .filter(Boolean)
+  .slice(0, 3);
+---
+
+<article
+  class={`course-card card ${category?.theme ?? ''}`}
+  data-slug={slug}
+  data-free={String(d.isFree)}
+  data-recommended={String(d.recommended)}
+  data-priority={d.priority}
+  data-duration-order={d.durationCategory === 'short'
+    ? 0
+    : d.durationCategory === 'long'
+      ? 1
+      : 2}
+  data-updated={(d.updatedAt ?? d.checkedAt).getTime()}
+>
+  <a
+    class="course-card__image-link"
+    href={`/course/${slug}/`}
+    aria-label={`Подробнее: ${d.title}`}
+  >
+    <div class="course-card__image">
+      {
+        d.image ? (
+          <img src={d.image} alt="" loading="lazy" width="400" height="200" />
+        ) : (
+          <CoursePlaceholder categoryId={d.category} />
+        )
+      }
+    </div>
+  </a>
+
+  <div class="course-card__body">
+    <div class="course-card__top">
+      <div class="course-card__badges">
+        {badges.map((b) => b && <Badge variant={b.variant}>{b.label}</Badge>)}
+      </div>
+      <div class="course-card__tools">
+        <FavoriteButton
+          courseId={d.id}
+          courseSlug={slug}
+          courseTitle={d.title}
+          compact
+        />
+        {
+          showCompare && (
+            <CompareButton
+              courseId={d.id}
+              courseSlug={slug}
+              courseTitle={d.title}
+              compact
+            />
+          )
+        }
+      </div>
+    </div>
+
+    <h3 class="course-card__title">
+      <a href={`/course/${slug}/`}>{d.title}</a>
+    </h3>
+    <p class="course-card__school">{schoolOrAuthor}</p>
+    <p class="course-card__desc line-clamp-2">{d.shortDescription}</p>
+
+    <p class="course-card__params">
+      {formatLevel(d.level)} · {formatFormat(d.format)}{
+        d.duration ? ` · ${d.duration}` : ''
+      }
+    </p>
+
+    <time class="course-card__checked" datetime={d.checkedAt.toISOString()}>
+      Проверено {
+        d.checkedAt.toLocaleDateString('ru-RU', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      }
+    </time>
+
+    <div class="course-card__actions">
+      <a class="btn btn--secondary btn--sm" href={`/course/${slug}/`}
+        >Подробнее</a
+      >
+      <AffiliateButton
+        courseId={d.id}
+        courseTitle={d.title}
+        category={d.category}
+        school={schoolOrAuthor}
+        isFree={d.isFree}
+        affiliateUrl={d.affiliateUrl}
+        buttonType="card"
+        position={position}
+        label="Перейти"
+        size="sm"
+      />
+    </div>
+  </div>
+</article>
+
+<style>
+  .course-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    transition:
+      box-shadow var(--transition),
+      transform var(--transition);
+  }
+  .course-card:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+  .course-card__image-link {
+    display: block;
+    text-decoration: none;
+  }
+  .course-card__image {
+    aspect-ratio: 16 / 8;
+    overflow: hidden;
+    background: var(--cat-soft, var(--color-primary-soft));
+  }
+  .course-card__image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .course-card__body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: var(--space-4);
+    gap: var(--space-2);
+  }
+  .course-card__top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--space-2);
+  }
+  .course-card__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+  }
+  .course-card__tools {
+    display: flex;
+    gap: 0.25rem;
+    flex-shrink: 0;
+  }
+  .course-card__title {
+    margin: 0;
+    font-family: var(--font-heading);
+    font-size: var(--text-base);
+    font-weight: 700;
+    line-height: 1.3;
+  }
+  .course-card__title a {
+    color: var(--color-text);
+    text-decoration: none;
+  }
+  .course-card__title a:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .course-card__school {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+  .course-card__desc {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    flex: 1;
+  }
+  .course-card__params {
+    margin: 0;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+  }
+  .course-card__checked {
+    font-size: 0.68rem;
+    color: #94a3b8;
+  }
+  .course-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: auto;
+    padding-top: var(--space-2);
+  }
+</style>

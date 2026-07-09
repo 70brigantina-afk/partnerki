@@ -1,0 +1,19 @@
+---
+interface Props {
+  text?: string;
+  compact?: boolean;
+}
+
+const {
+  text = 'На сайте могут использоваться партнёрские ссылки. Переход на внешний ресурс может приносить проекту вознаграждение без увеличения стоимости для пользователя.',
+  compact = false,
+} = Astro.props;
+---
+
+<aside
+  class:list={['disclosure', { 'disclosure--compact': compact }]}
+  role="note"
+>
+  {!compact && <strong>Партнёрское раскрытие. </strong>}
+  {text}
+</aside>

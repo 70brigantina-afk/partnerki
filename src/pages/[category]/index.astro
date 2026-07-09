@@ -1,0 +1,22 @@
+---
+import CategoryPageLayout from '@/components/CategoryPageLayout.astro';
+import { categories } from '@/config/categories';
+import { getPublicCourses, getCoursesByCategory } from '@/utils/courses';
+
+export async function getStaticPaths() {
+  return categories.map((category) => ({
+    params: { category: category.slug },
+    props: { category },
+  }));
+}
+
+const { category } = Astro.props;
+const allCourses = await getPublicCourses();
+const courses = getCoursesByCategory(allCourses, category.id);
+---
+
+<CategoryPageLayout
+  category={category}
+  courses={courses}
+  allCourses={allCourses}
+/>

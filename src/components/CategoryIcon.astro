@@ -1,0 +1,144 @@
+---
+interface Props {
+  icon: string;
+  size?: number;
+  class?: string;
+}
+
+const { icon, size = 24, class: className = '' } = Astro.props;
+---
+
+<svg
+  class={className}
+  width={size}
+  height={size}
+  viewBox="0 0 24 24"
+  fill="none"
+  aria-hidden="true"
+>
+  {
+    icon === 'ai' && (
+      <>
+        <circle cx="6" cy="6" r="2" stroke="currentColor" stroke-width="1.5" />
+        <circle cx="18" cy="6" r="2" stroke="currentColor" stroke-width="1.5" />
+        <circle
+          cx="12"
+          cy="18"
+          r="2"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path
+          d="M8 6h8M7 8l4 8M17 8l-4 8"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </>
+    )
+  }
+  {
+    icon === 'marketing' && (
+      <>
+        <path
+          d="M4 18V6l8 4 8-4v12"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M12 10v8"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <path
+          d="M8 14l4 2 4-2"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </>
+    )
+  }
+  {
+    icon === 'psychology' && (
+      <>
+        <path
+          d="M12 4a4 4 0 00-4 4c0 2 1.5 3.5 2 5.5h4c.5-2 2-3.5 2-5.5a4 4 0 00-4-4z"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M9 20h6M10 17h4"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+        <circle cx="10" cy="9" r="0.75" fill="currentColor" />
+        <circle cx="14" cy="9" r="0.75" fill="currentColor" />
+      </>
+    )
+  }
+  {
+    icon === 'health' && (
+      <>
+        <path
+          d="M12 21s-6-3.5-6-9a4 4 0 118 0c0 5.5-6 9-6 9z"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+        />
+        <path
+          d="M12 8v5M9.5 10.5h5"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+        />
+      </>
+    )
+  }
+  {
+    icon === 'design' && (
+      <>
+        <rect
+          x="4"
+          y="4"
+          width="16"
+          height="16"
+          rx="2"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+        <path
+          d="M4 16l5-5 3 3 4-4 4 4"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+      </>
+    )
+  }
+  {
+    icon === 'english' && (
+      <>
+        <circle
+          cx="12"
+          cy="12"
+          r="8"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+        <path
+          d="M4 12h16M12 4c2 2.5 3 5 3 8s-1 5.5-3 8M12 4c-2 2.5-3 5-3 8s1 5.5 3 8"
+          stroke="currentColor"
+          stroke-width="1.5"
+        />
+      </>
+    )
+  }
+</svg>

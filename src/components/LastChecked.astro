@@ -1,0 +1,28 @@
+---
+interface Props {
+  date: Date;
+}
+
+const { date } = Astro.props;
+const formatted = date.toLocaleDateString('ru-RU', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+});
+---
+
+<p class="last-checked">
+  <span class="last-checked__label">Последняя проверка:</span>
+  <time datetime={date.toISOString()}>{formatted}</time>
+</p>
+
+<style>
+  .last-checked {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .last-checked__label {
+    margin-right: var(--space-1);
+  }
+</style>

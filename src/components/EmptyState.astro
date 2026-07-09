@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  actionLabel?: string;
+  actionHref?: string;
+}
+
+const { title, description, actionLabel, actionHref } = Astro.props;
+---
+
+<div class="empty-state">
+  <h2 class="empty-state__title">{title}</h2>
+  {description && <p class="empty-state__text">{description}</p>}
+  {
+    actionLabel && actionHref && (
+      <a class="btn btn--primary" href={actionHref}>
+        {actionLabel}
+      </a>
+    )
+  }
+  <slot />
+</div>
+
+<style>
+  .empty-state {
+    padding: var(--space-10);
+    text-align: center;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .empty-state__title {
+    margin: 0 0 var(--space-3);
+  }
+  .empty-state__text {
+    margin: 0 0 var(--space-6);
+    color: var(--color-text-muted);
+  }
+</style>

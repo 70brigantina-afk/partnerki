@@ -1,0 +1,82 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EmptyState from '@/components/EmptyState.astro';
+import { categories } from '@/config/categories';
+---
+
+<BaseLayout
+  title="Избранное"
+  description="Сохранённые программы обучения без регистрации."
+>
+  <div class="page-header container">
+    <h1>Избранное</h1>
+    <p>Ваши сохранённые программы хранятся в браузере на этом устройстве.</p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div id="fav-empty">
+        <EmptyState
+          title="Избранное пусто"
+          description="Нажмите «В избранное» на карточке программы, чтобы сохранить её здесь."
+        >
+          <div class="fav-links">
+            {
+              categories.map((c) => (
+                <a class="btn btn--secondary" href={`/${c.slug}/`}>
+                  {c.name}
+                </a>
+              ))
+            }
+          </div>
+        </EmptyState>
+      </div>
+      <div id="fav-list" class="grid grid--2" hidden></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getFavorites } from '@/utils/favorites-client';
+
+  const empty = document.getElementById('fav-empty');
+  const list = document.getElementById('fav-list');
+
+  function render() {
+    if (!empty || !list) return;
+
+    const items = getFavorites();
+
+    if (!items.length) {
+      empty.hidden = false;
+      list.hidden = true;
+      return;
+    }
+
+    empty.hidden = true;
+    list.hidden = false;
+    list.innerHTML = items
+      .map(
+        (item) => `
+      <article class="card card__body">
+        <h2 class="card__title"><a href="/course/${item.slug}/">${item.title}</a></h2>
+        <a class="btn btn--secondary" href="/course/${item.slug}/">Открыть программу</a>
+      </article>`,
+      )
+      .join('');
+  }
+
+  render();
+  window.addEventListener('storage', render);
+  window.addEventListener('navigator:favorites-changed', render);
+</script>
+
+<style>
+  .fav-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-4);
+  }
+</style>

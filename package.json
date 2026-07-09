@@ -1,0 +1,30 @@
+{
+  "name": "navigator-obucheniya",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build && npm run validate:courses",
+    "preview": "astro preview",
+    "astro": "astro",
+    "check": "astro check && tsc --noEmit",
+    "validate:courses": "tsx scripts/validate-courses.ts",
+    "format": "prettier --check .",
+    "format:fix": "prettier --write .",
+    "lint:links": "tsx scripts/check-links.ts"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.4.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/manrope": "^5.2.8",
+    "astro": "^5.7.10"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.4",
+    "prettier": "^3.5.3",
+    "prettier-plugin-astro": "^0.14.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.3"
+  }
+}

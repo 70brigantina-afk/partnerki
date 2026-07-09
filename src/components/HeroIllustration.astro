@@ -1,0 +1,197 @@
+---
+import { categories } from '@/config/categories';
+---
+
+<div class="hero-ill" aria-hidden="true">
+  <div class="hero-ill__bg">
+    <div class="hero-ill__orb hero-ill__orb--1"></div>
+    <div class="hero-ill__orb hero-ill__orb--2"></div>
+    <div class="hero-ill__orb hero-ill__orb--3"></div>
+  </div>
+
+  <svg class="hero-ill__route" viewBox="0 0 400 360" fill="none">
+    <path
+      d="M60 280 C120 200, 180 240, 240 160 S 340 120, 340 80"
+      stroke="url(#routeGrad)"
+      stroke-width="2"
+      stroke-dasharray="6 6"
+      opacity="0.5"></path>
+    <defs>
+      <linearGradient id="routeGrad" x1="60" y1="280" x2="340" y2="80">
+        <stop stop-color="#315CF5"></stop>
+        <stop offset="1" stop-color="#6366F1"></stop>
+      </linearGradient>
+    </defs>
+    <circle cx="60" cy="280" r="6" fill="#315CF5" opacity="0.6"></circle>
+    <circle cx="240" cy="160" r="5" fill="#8B5CF6" opacity="0.5"></circle>
+    <circle cx="340" cy="80" r="7" fill="#315CF5"></circle>
+  </svg>
+
+  <div class="hero-ill__cards">
+    {
+      categories.slice(0, 4).map((cat, i) => (
+        <div
+          class={`hero-ill__mini ${cat.theme}`}
+          style={`--delay: ${i * 0.1}s`}
+        >
+          <span class="hero-ill__mini-dot" />
+          <span class="hero-ill__mini-label">{cat.name.split(' ')[0]}</span>
+        </div>
+      ))
+    }
+  </div>
+
+  <div class="hero-ill__badge">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+      <path
+        d="M12 2l2.5 7.5H22l-6 4.5 2.5 7.5L12 17l-6.5 4.5L8 14 2 9.5h7.5z"
+        stroke="currentColor"
+        stroke-width="1.5"
+        stroke-linejoin="round"></path>
+    </svg>
+    <span>Подбор за 2 минуты</span>
+  </div>
+</div>
+
+<style>
+  .hero-ill {
+    position: relative;
+    width: 100%;
+    max-width: 420px;
+    aspect-ratio: 1 / 0.9;
+    margin-inline: auto;
+  }
+
+  .hero-ill__bg {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--radius-2xl);
+    background: linear-gradient(
+      145deg,
+      #fff 0%,
+      var(--color-primary-soft) 100%
+    );
+    border: 1px solid var(--color-border);
+    overflow: hidden;
+  }
+
+  .hero-ill__orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(40px);
+  }
+
+  .hero-ill__orb--1 {
+    width: 180px;
+    height: 180px;
+    top: -40px;
+    right: -30px;
+    background: rgba(99, 102, 241, 0.15);
+  }
+
+  .hero-ill__orb--2 {
+    width: 120px;
+    height: 120px;
+    bottom: 20px;
+    left: -20px;
+    background: rgba(49, 92, 245, 0.12);
+  }
+
+  .hero-ill__orb--3 {
+    width: 80px;
+    height: 80px;
+    top: 50%;
+    left: 40%;
+    background: rgba(13, 148, 136, 0.1);
+  }
+
+  .hero-ill__route {
+    position: absolute;
+    inset: 10%;
+    width: 80%;
+    height: 80%;
+  }
+
+  .hero-ill__cards {
+    position: absolute;
+    inset: 0;
+    padding: 1.5rem;
+  }
+
+  .hero-ill__mini {
+    position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--color-text);
+    animation: floatIn 0.6s ease backwards;
+    animation-delay: var(--delay);
+  }
+
+  .hero-ill__mini:nth-child(1) {
+    top: 12%;
+    left: 8%;
+  }
+  .hero-ill__mini:nth-child(2) {
+    top: 28%;
+    right: 6%;
+  }
+  .hero-ill__mini:nth-child(3) {
+    bottom: 32%;
+    left: 12%;
+  }
+  .hero-ill__mini:nth-child(4) {
+    bottom: 14%;
+    right: 10%;
+  }
+
+  .hero-ill__mini-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--cat-accent);
+    flex-shrink: 0;
+  }
+
+  .hero-ill__badge {
+    position: absolute;
+    bottom: 1.25rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    background: var(--color-primary);
+    color: #fff;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    box-shadow: var(--shadow-md);
+    white-space: nowrap;
+  }
+
+  @keyframes floatIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero-ill__mini {
+      animation: none;
+    }
+  }
+</style>

@@ -1,0 +1,123 @@
+---
+import type { CourseEntry } from '@/utils/courses';
+import { formatLevel, formatFormat } from '@/utils/courses';
+import { getCategoryById } from '@/config/categories';
+import AffiliateButton from './AffiliateButton.astro';
+
+interface Props {
+  courses: CourseEntry[];
+}
+
+const { courses } = Astro.props;
+---
+
+<div class="comparison" data-comparison-table>
+  <table class="comparison__table">
+    <caption class="sr-only">Сравнение выбранных программ</caption>
+    <thead>
+      <tr>
+        <th scope="col">Параметр</th>
+        {courses.map((c) => <th scope="col">{c.data.title}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th scope="row">Направление</th>
+        {courses.map((c) => <td>{getCategoryById(c.data.category)?.name}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Стоимость</th>
+        {courses.map((c) => <td>{c.data.isFree ? 'Бесплатно' : 'Платно'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Уровень</th>
+        {courses.map((c) => <td>{formatLevel(c.data.level)}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Формат</th>
+        {courses.map((c) => <td>{formatFormat(c.data.format)}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Продолжительность</th>
+        {courses.map((c) => <td>{c.data.duration ?? '—'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Обратная связь</th>
+        {courses.map((c) => <td>{c.data.feedback ? 'Да' : 'Нет'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Сертификат</th>
+        {courses.map((c) => <td>{c.data.certificate ? 'Да' : 'Нет'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Аудитория</th>
+        {courses.map((c) => <td>{c.data.audience.join(', ') || '—'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Навыки и теги</th>
+        {courses.map((c) => <td>{c.data.tags.join(', ') || '—'}</td>)}
+      </tr>
+      <tr>
+        <th scope="row">Проверка</th>
+        {
+          courses.map((c) => (
+            <td>{c.data.checkedAt.toLocaleDateString('ru-RU')}</td>
+          ))
+        }
+      </tr>
+      <tr>
+        <th scope="row">Действия</th>
+        {
+          courses.map((c) => (
+            <td>
+              <a class="btn btn--secondary" href={`/course/${c.slug}/`}>
+                Подробнее
+              </a>
+              <AffiliateButton
+                courseId={c.data.id}
+                courseTitle={c.data.title}
+                category={c.data.category}
+                school={c.data.school ?? ''}
+                isFree={c.data.isFree}
+                affiliateUrl={c.data.affiliateUrl}
+                buttonType="comparison"
+                label="Перейти"
+                size="sm"
+              />
+            </td>
+          ))
+        }
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+<style>
+  .comparison__table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    font-size: var(--text-sm);
+  }
+  .comparison__table th,
+  .comparison__table td {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    vertical-align: top;
+    text-align: left;
+  }
+  .comparison__table thead th {
+    background: var(--color-primary-soft);
+  }
+  @media (max-width: 767px) {
+    .comparison {
+      overflow-x: auto;
+    }
+    .comparison__table {
+      min-width: 640px;
+    }
+  }
+</style>

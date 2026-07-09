@@ -1,0 +1,248 @@
+---
+import type { Category } from '@/config/categories';
+import type { CourseEntry } from '@/utils/courses';
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import CourseFilters from '@/components/CourseFilters.astro';
+import CourseGrid from '@/components/CourseGrid.astro';
+import CourseCard from '@/components/CourseCard.astro';
+import FAQ from '@/components/FAQ.astro';
+import CategoryCard from '@/components/CategoryCard.astro';
+import CategoryIcon from '@/components/CategoryIcon.astro';
+import AudienceCards from '@/components/AudienceCards.astro';
+import DemoBanner from '@/components/DemoBanner.astro';
+import { categories } from '@/config/categories';
+import { getRecommendedCourses } from '@/utils/courses';
+import { siteConfig } from '@/config/site';
+
+interface Props {
+  category: Category;
+  courses: CourseEntry[];
+  allCourses?: CourseEntry[];
+  title?: string;
+  description?: string;
+  intro?: string;
+  faq?: { question: string; answer: string }[];
+  noindex?: boolean;
+}
+
+const {
+  category,
+  courses,
+  allCourses = courses,
+  title = category.name,
+  description = category.fullDescription,
+  intro,
+  faq = category.faq,
+  noindex = false,
+} = Astro.props;
+
+const recommended = getRecommendedCourses(courses).slice(0, 3);
+const otherCategories = categories.filter((c) => c.id !== category.id);
+const courseCounts = Object.fromEntries(
+  categories.map((c) => [
+    c.id,
+    allCourses.filter((co) => co.data.category === c.id).length,
+  ]),
+);
+const hasDemo = courses.some((c) => c.data.isDemo);
+const countLabel =
+  courses.length === 1
+    ? 'программа'
+    : courses.length < 5
+      ? 'программы'
+      : 'программ';
+---
+
+<BaseLayout
+  title={category.seoTitle}
+  description={category.seoDescription}
+  noindex={noindex}
+  schema={{
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: category.name,
+    description: category.seoDescription,
+    itemListElement: courses.map((c, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      url: `${Astro.site}course/${c.slug}/`,
+      name: c.data.title,
+    })),
+  }}
+>
+  <section class={`cat-intro ${category.theme}`}>
+    <div class="container cat-intro__grid">
+      <div class="cat-intro__content">
+        <Breadcrumbs
+          items={[{ label: 'Главная', href: '/' }, { label: category.name }]}
+        />
+        <div class="cat-intro__icon-wrap">
+          <CategoryIcon icon={category.icon} size={32} />
+        </div>
+        <h1>{title}</h1>
+        <p>{intro ?? description}</p>
+        <p class="cat-intro__count">{courses.length} {countLabel} в каталоге</p>
+      </div>
+      <div class="cat-intro__decor" aria-hidden="true">
+        <div class="cat-intro__orb"></div>
+        <div class="cat-intro__ring"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class={`section section--compact ${category.theme}`}>
+    <div class="container">
+      <h2 class="section__title">Кому подойдёт это направление</h2>
+      <AudienceCards items={category.audience} />
+      {
+        category.id === 'zdorove' && (
+          <p class="health-note">{siteConfig.healthDisclaimer}</p>
+        )
+      }
+    </div>
+  </section>
+
+  {
+    recommended.length > 0 && (
+      <section class="section section--compact section--alt">
+        <div class="container">
+          <h2 class="section__title">Рекомендуемые программы</h2>
+          <div class="grid grid--3 grid--equal">
+            {recommended.map((course) => (
+              <CourseCard course={course} />
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section section--compact" id="catalog">
+    <div class="container">
+      <h2 class="section__title">Все программы направления</h2>
+      {hasDemo && <DemoBanner />}
+      <CourseFilters courses={courses} totalCount={courses.length} />
+      <CourseGrid courses={courses} />
+      <p class="course-grid__empty course-grid__empty-dynamic" hidden>
+        Программы по выбранным фильтрам не найдены.
+      </p>
+    </div>
+  </section>
+
+  <section class="section section--compact section--alt">
+    <div class="container">
+      <FAQ items={faq} />
+    </div>
+  </section>
+
+  <section class="section section--compact">
+    <div class="container">
+      <h2 class="section__title">Другие направления</h2>
+      <div class="grid grid--3">
+        {
+          otherCategories.map((cat) => (
+            <CategoryCard
+              category={cat}
+              courseCount={courseCounts[cat.id] ?? 0}
+              compact
+            />
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .cat-intro {
+    padding-block: var(--space-8) var(--space-6);
+    background: linear-gradient(
+      135deg,
+      var(--cat-soft) 0%,
+      var(--color-bg) 60%
+    );
+    border-bottom: 1px solid var(--color-border);
+  }
+  .cat-intro__grid {
+    display: grid;
+    gap: var(--space-6);
+    align-items: center;
+  }
+  @media (min-width: 768px) {
+    .cat-intro__grid {
+      grid-template-columns: 1fr auto;
+    }
+  }
+  .cat-intro__content h1 {
+    margin: var(--space-3) 0;
+    font-size: clamp(var(--text-2xl), 4vw, var(--text-3xl));
+    max-width: 20ch;
+  }
+  .cat-intro__content p {
+    margin: 0;
+    color: var(--color-text-muted);
+    max-width: 40rem;
+    line-height: 1.6;
+  }
+  .cat-intro__icon-wrap {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    margin-top: var(--space-3);
+    border-radius: var(--radius-lg);
+    background: var(--color-surface);
+    color: var(--cat-accent);
+    box-shadow: var(--shadow-sm);
+  }
+  .cat-intro__count {
+    margin-top: var(--space-4) !important;
+    font-weight: 600;
+    font-size: var(--text-sm) !important;
+    color: var(--cat-accent) !important;
+  }
+  .cat-intro__decor {
+    position: relative;
+    width: 8rem;
+    height: 8rem;
+    display: none;
+  }
+  @media (min-width: 768px) {
+    .cat-intro__decor {
+      display: block;
+    }
+  }
+  .cat-intro__orb {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: var(--cat-accent);
+    opacity: 0.08;
+  }
+  .cat-intro__ring {
+    position: absolute;
+    inset: 1rem;
+    border: 2px dashed var(--cat-accent);
+    border-radius: 50%;
+    opacity: 0.25;
+  }
+  .health-note {
+    margin-top: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    background: #ecfdf5;
+    border-radius: var(--radius-md);
+    color: #166534;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+  .course-grid__empty {
+    padding: var(--space-6);
+    text-align: center;
+    color: var(--color-text-muted);
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+  }
+</style>

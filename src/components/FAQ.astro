@@ -1,0 +1,67 @@
+---
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+interface Props {
+  items: FAQItem[];
+  title?: string;
+}
+
+const { items, title = 'Частые вопросы' } = Astro.props;
+---
+
+<section class="faq" aria-labelledby="faq-title">
+  <h2 id="faq-title" class="section__title">{title}</h2>
+  <div class="faq__list">
+    {
+      items.map((item) => (
+        <details class="faq__item">
+          <summary class="faq__question">{item.question}</summary>
+          <div class="faq__answer">
+            <p>{item.answer}</p>
+          </div>
+        </details>
+      ))
+    }
+  </div>
+</section>
+
+<style>
+  .faq__list {
+    display: grid;
+    gap: var(--space-3);
+  }
+  .faq__item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+    transition: border-color var(--transition);
+  }
+  .faq__item[open] {
+    border-color: var(--color-primary-muted);
+  }
+  .faq__question {
+    cursor: pointer;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    list-style: none;
+    padding: var(--space-4);
+    transition: color var(--transition);
+  }
+  .faq__question:hover {
+    color: var(--color-primary);
+  }
+  .faq__question::-webkit-details-marker {
+    display: none;
+  }
+  .faq__answer {
+    padding: 0 var(--space-4) var(--space-4);
+    color: var(--color-text-muted);
+  }
+  .faq__answer p {
+    margin: 0;
+  }
+</style>

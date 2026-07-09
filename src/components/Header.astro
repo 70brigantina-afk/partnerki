@@ -1,0 +1,276 @@
+---
+import { siteConfig } from '@/config/site';
+import { categories } from '@/config/categories';
+import MobileMenuToggle from './MobileMenuToggle.astro';
+import MobileMenuPanel from './MobileMenuPanel.astro';
+import Search from './Search.astro';
+import { getSearchIndex } from '@/utils/courses';
+
+const searchIndex = await getSearchIndex();
+const navCategories = categories.slice(0, 6);
+---
+
+<header class="header" id="site-header">
+  <div class="container header__inner">
+    <a class="header__logo" href="/">
+      <span class="header__logo-mark" aria-hidden="true">Н</span>
+      <span class="header__logo-text">{siteConfig.name}</span>
+    </a>
+
+    <nav class="header__nav hide-mobile" aria-label="Основная навигация">
+      <div class="header__dropdown">
+        <button
+          class="header__link header__dropdown-btn"
+          type="button"
+          aria-haspopup="true"
+          aria-expanded="false"
+          id="catalog-btn"
+        >
+          Направления
+        </button>
+        <ul class="header__dropdown-menu" id="catalog-menu" role="menu">
+          {
+            navCategories.map((cat) => (
+              <li role="none">
+                <a role="menuitem" href={`/${cat.slug}/`}>
+                  {cat.name}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+      <a class="header__link" href="/besplatnye/">Бесплатно</a>
+      <a class="header__link" href="/podbor-obucheniya/">Подбор</a>
+      <a class="header__link" href="/o-proekte/">О проекте</a>
+    </nav>
+
+    <div class="header__actions">
+      <Search searchIndex={searchIndex} />
+      <a
+        class="header__icon-link hide-mobile"
+        href="/izbrannoe/"
+        aria-label="Избранное"
+        title="Избранное"
+        data-tooltip="Избранное"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
+            stroke="currentColor"
+            stroke-width="1.5"></path>
+        </svg>
+        <span class="header__badge" data-fav-count hidden>0</span>
+      </a>
+      <a
+        class="header__icon-link hide-mobile"
+        href="/sravnenie/"
+        aria-label="Сравнение программ"
+        title="Сравнение"
+        data-tooltip="Сравнение"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"
+            stroke="currentColor"
+            stroke-width="1.5"
+            stroke-linecap="round"></path>
+        </svg>
+        <span class="header__badge" data-compare-count hidden>0</span>
+      </a>
+      <MobileMenuToggle />
+    </div>
+  </div>
+</header>
+
+<MobileMenuPanel categories={navCategories} />
+
+<script>
+  const btn = document.getElementById('catalog-btn');
+  const menu = document.getElementById('catalog-menu');
+  btn?.addEventListener('click', () => {
+    const expanded = btn.getAttribute('aria-expanded') === 'true';
+    btn.setAttribute('aria-expanded', String(!expanded));
+    menu?.classList.toggle('is-open');
+  });
+  document.addEventListener('click', (e) => {
+    if (!btn?.contains(e.target as Node) && !menu?.contains(e.target as Node)) {
+      btn?.setAttribute('aria-expanded', 'false');
+      menu?.classList.remove('is-open');
+    }
+  });
+  const header = document.getElementById('site-header');
+  window.addEventListener('scroll', () => {
+    header?.classList.toggle('is-scrolled', window.scrollY > 8);
+  });
+</script>
+
+<style>
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    height: var(--header-height);
+    background: rgba(255, 255, 255, 0.94);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid transparent;
+    transition:
+      border-color var(--transition),
+      box-shadow var(--transition);
+  }
+  .header.is-scrolled {
+    border-color: var(--color-border);
+    box-shadow: var(--shadow-sm);
+  }
+  .header__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    gap: var(--space-3);
+  }
+  .header__logo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    text-decoration: none;
+    color: var(--color-text);
+    flex-shrink: 0;
+  }
+  .header__logo:hover {
+    text-decoration: none;
+  }
+  .header__logo-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--radius-sm);
+    background: var(--color-primary);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.85rem;
+  }
+  .header__logo-text {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: var(--text-sm);
+    white-space: nowrap;
+  }
+  @media (max-width: 480px) {
+    .header__logo-text {
+      display: none;
+    }
+  }
+  .header__nav {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .header__link {
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    padding: 0;
+    transition: color var(--transition);
+  }
+  .header__link:hover {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .header__dropdown {
+    position: relative;
+  }
+  .header__dropdown-menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    min-width: 15rem;
+    margin: 0;
+    padding: var(--space-2);
+    list-style: none;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    transition: all var(--transition);
+  }
+  .header__dropdown-menu.is-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+  }
+  .header__dropdown-menu a {
+    display: block;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-text);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: var(--text-sm);
+    transition: background var(--transition);
+  }
+  .header__dropdown-menu a:hover {
+    background: var(--color-primary-soft);
+    text-decoration: none;
+  }
+  .header__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .header__icon-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    color: var(--color-text-muted);
+    border-radius: var(--radius-sm);
+    transition:
+      background var(--transition),
+      color var(--transition);
+  }
+  .header__icon-link:hover {
+    background: var(--color-primary-soft);
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+  .header__badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    min-width: 1rem;
+    height: 1rem;
+    padding: 0 0.25rem;
+    border-radius: 999px;
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.625rem;
+    font-weight: 700;
+    line-height: 1rem;
+    text-align: center;
+  }
+</style>

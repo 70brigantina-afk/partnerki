@@ -1,0 +1,165 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import EmptyState from '@/components/EmptyState.astro';
+import { getPublicCourses } from '@/utils/courses';
+import { categories } from '@/config/categories';
+
+const publicCourses = await getPublicCourses();
+const courseData = Object.fromEntries(
+  publicCourses.map((c) => [
+    c.data.id,
+    {
+      slug: c.slug,
+      title: c.data.title,
+      category: c.data.category,
+      isFree: c.data.isFree,
+      level: c.data.level,
+      format: c.data.format,
+      duration: c.data.duration ?? '',
+      feedback: c.data.feedback,
+      certificate: c.data.certificate,
+      tags: c.data.tags,
+    },
+  ]),
+);
+---
+
+<BaseLayout
+  title="Сравнение программ"
+  description="Сравните до трёх образовательных программ по ключевым параметрам."
+>
+  <div class="page-header container">
+    <h1>Сравнение программ</h1>
+    <p>
+      Добавьте программы к сравнению с карточек каталога. Здесь можно сравнить
+      до трёх вариантов.
+    </p>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div
+        id="compare-page-data"
+        data-course-map={JSON.stringify(courseData)}
+        hidden
+      >
+      </div>
+      <div id="compare-content">
+        <EmptyState
+          title="Список сравнения пуст"
+          description="Откройте карточки программ и нажмите «Сравнить», чтобы добавить их сюда."
+        >
+          <div class="compare-links">
+            {
+              categories.map((c) => (
+                <a class="btn btn--secondary" href={`/${c.slug}/`}>
+                  {c.name}
+                </a>
+              ))
+            }
+          </div>
+        </EmptyState>
+      </div>
+      <div id="compare-table" hidden></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import { getCompareItems } from '@/utils/compare-client';
+
+  type CourseRow = {
+    slug: string;
+    title: string;
+    category: string;
+    isFree: boolean;
+    level: string;
+    format: string;
+    duration: string;
+    feedback: boolean;
+    certificate: boolean;
+    tags: string[];
+  };
+
+  const dataEl = document.getElementById('compare-page-data');
+  const courseData = JSON.parse(dataEl?.dataset.courseMap ?? '{}') as Record<
+    string,
+    CourseRow
+  >;
+  const content = document.getElementById('compare-content');
+  const tableWrap = document.getElementById('compare-table');
+
+  function render() {
+    if (!content || !tableWrap) return;
+
+    const items = getCompareItems();
+
+    if (!items.length) {
+      content.hidden = false;
+      tableWrap.hidden = true;
+      return;
+    }
+
+    content.hidden = true;
+    tableWrap.hidden = false;
+
+    const courses = items.map((item) => courseData[item.id]).filter(Boolean);
+
+    if (!courses.length) {
+      tableWrap.innerHTML =
+        '<p>Выбранные программы недоступны в текущей версии каталога. Добавьте другие варианты.</p>';
+      return;
+    }
+
+    tableWrap.innerHTML = `
+      <table class="comparison__table">
+        <caption class="sr-only">Сравнение программ</caption>
+        <thead>
+          <tr><th>Параметр</th>${courses.map((c) => `<th>${c.title}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          <tr><th>Направление</th>${courses.map((c) => `<td>${c.category}</td>`).join('')}</tr>
+          <tr><th>Стоимость</th>${courses.map((c) => `<td>${c.isFree ? 'Бесплатно' : 'Платно'}</td>`).join('')}</tr>
+          <tr><th>Уровень</th>${courses.map((c) => `<td>${c.level}</td>`).join('')}</tr>
+          <tr><th>Формат</th>${courses.map((c) => `<td>${c.format}</td>`).join('')}</tr>
+          <tr><th>Продолжительность</th>${courses.map((c) => `<td>${c.duration || '—'}</td>`).join('')}</tr>
+          <tr><th>Обратная связь</th>${courses.map((c) => `<td>${c.feedback ? 'Да' : 'Нет'}</td>`).join('')}</tr>
+          <tr><th>Сертификат</th>${courses.map((c) => `<td>${c.certificate ? 'Да' : 'Нет'}</td>`).join('')}</tr>
+          <tr><th>Теги</th>${courses.map((c) => `<td>${c.tags.join(', ')}</td>`).join('')}</tr>
+          <tr><th>Действия</th>${courses
+            .map(
+              (c) =>
+                `<td><a class="btn btn--secondary" href="/course/${c.slug}/">Подробнее</a></td>`,
+            )
+            .join('')}</tr>
+        </tbody>
+      </table>`;
+  }
+
+  render();
+  window.addEventListener('storage', render);
+  window.addEventListener('navigator:compare-changed', render);
+</script>
+
+<style>
+  .compare-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-4);
+  }
+  .comparison__table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    font-size: var(--text-sm);
+  }
+  .comparison__table th,
+  .comparison__table td {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border);
+    text-align: left;
+  }
+</style>

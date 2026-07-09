@@ -1,0 +1,25 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import CourseGrid from '@/components/CourseGrid.astro';
+import { getPublicCourses, getFreeCourses } from '@/utils/courses';
+
+const courses = getFreeCourses(await getPublicCourses());
+---
+
+<BaseLayout
+  title="Бесплатное обучение — каталог программ"
+  description="Все бесплатные онлайн-программы из каталога Навигатор обучения."
+>
+  <div class="page-header container">
+    <h1>Бесплатное обучение</h1>
+    <p>Каталог бесплатных программ и интенсивов по всем направлениям.</p>
+  </div>
+  <section class="section">
+    <div class="container">
+      <CourseGrid
+        courses={courses}
+        emptyMessage="Бесплатные программы появятся после добавления активных записей."
+      />
+    </div>
+  </section>
+</BaseLayout>

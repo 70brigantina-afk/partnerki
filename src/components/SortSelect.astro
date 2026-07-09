@@ -1,0 +1,64 @@
+---
+interface Props {
+  id?: string;
+}
+
+const { id = 'course-sort' } = Astro.props;
+---
+
+<div class="sort-select">
+  <label for={id}>Сортировка</label>
+  <select id={id} data-sort-select>
+    <option value="recommended">Рекомендуемые</option>
+    <option value="free-first">Сначала бесплатные</option>
+    <option value="paid-first">Сначала платные</option>
+    <option value="priority">По популярности</option>
+    <option value="duration">По длительности</option>
+    <option value="updated">Недавно обновлённые</option>
+  </select>
+</div>
+
+<script is:inline>
+  const sortFns = {
+    recommended: (a, b) => {
+      const ar = a.dataset.recommended === 'true' ? 1 : 0;
+      const br = b.dataset.recommended === 'true' ? 1 : 0;
+      if (br !== ar) return br - ar;
+      return Number(b.dataset.priority) - Number(a.dataset.priority);
+    },
+    'free-first': (a, b) => Number(b.dataset.free) - Number(a.dataset.free),
+    'paid-first': (a, b) => Number(a.dataset.free) - Number(b.dataset.free),
+    priority: (a, b) => Number(b.dataset.priority) - Number(a.dataset.priority),
+    duration: (a, b) =>
+      Number(a.dataset.durationOrder) - Number(b.dataset.durationOrder),
+    updated: (a, b) => Number(b.dataset.updated) - Number(a.dataset.updated),
+  };
+
+  document.querySelectorAll('[data-sort-select]').forEach((select) => {
+    select.addEventListener('change', (e) => {
+      const value = e.target.value;
+      const grid = document.getElementById('course-grid');
+      if (!grid) return;
+      const items = Array.from(grid.children);
+      const fn = sortFns[value] ?? sortFns.recommended;
+      items.sort(fn).forEach((el) => grid.appendChild(el));
+    });
+  });
+</script>
+
+<style>
+  .sort-select {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    font-size: var(--text-sm);
+  }
+  .sort-select select {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    font: inherit;
+    background: var(--color-surface);
+  }
+</style>

@@ -1,0 +1,496 @@
+---
+import BaseLayout from '@/layouts/BaseLayout.astro';
+import Breadcrumbs from '@/components/Breadcrumbs.astro';
+import Badge from '@/components/Badge.astro';
+import Disclosure from '@/components/Disclosure.astro';
+import AffiliateButton from '@/components/AffiliateButton.astro';
+import FavoriteButton from '@/components/FavoriteButton.astro';
+import CompareButton from '@/components/CompareButton.astro';
+import RelatedCourses from '@/components/RelatedCourses.astro';
+import CoursePlaceholder from '@/components/CoursePlaceholder.astro';
+import FAQ from '@/components/FAQ.astro';
+import { getPublicCourses, formatLevel, formatFormat } from '@/utils/courses';
+import { getCategoryById } from '@/config/categories';
+import { siteConfig } from '@/config/site';
+
+export async function getStaticPaths() {
+  const courses = await getPublicCourses();
+  return courses.map((course) => ({
+    params: { slug: course.slug },
+    props: { course },
+  }));
+}
+
+const { course } = Astro.props;
+const d = course.data;
+const slug = course.slug;
+const category = getCategoryById(d.category);
+const theme = category?.theme ?? '';
+const allCourses = await getPublicCourses();
+const sameSchool = allCourses.filter(
+  (c) => c.slug !== slug && c.data.school && c.data.school === d.school,
+);
+const similar = allCourses.filter(
+  (c) => c.slug !== slug && c.data.category === d.category,
+);
+const schoolOrAuthor = d.school || d.author || 'Организатор уточняется';
+const noindex = d.status !== 'active';
+const priceText = d.isFree
+  ? 'Бесплатно'
+  : (d.priceText ?? 'Уточняйте на сайте организатора');
+
+const courseFaq = [
+  {
+    question: 'Как записаться на программу?',
+    answer:
+      'Нажмите кнопку перехода на официальный сайт организатора, когда ссылка добавлена. Регистрация проходит на стороне школы.',
+  },
+  {
+    question: 'Актуальна ли информация на этой странице?',
+    answer:
+      'Мы указываем дату последней проверки. Перед оплатой сверяйте условия на сайте организатора.',
+  },
+];
+---
+
+<BaseLayout
+  title={d.seoTitle}
+  description={d.seoDescription}
+  canonical={`${Astro.site}course/${slug}/`}
+  noindex={noindex}
+  ogType="article"
+  schema={[
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Course',
+      name: d.title,
+      description: d.shortDescription,
+      provider: { '@type': 'Organization', name: schoolOrAuthor },
+      educationalLevel: formatLevel(d.level),
+      courseMode: formatFormat(d.format),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: 'Главная', item: Astro.site },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: category?.name,
+          item: `${Astro.site}${category?.slug}/`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: d.title,
+          item: `${Astro.site}course/${slug}/`,
+        },
+      ],
+    },
+  ]}
+>
+  <article class={`course-page ${theme}`}>
+    <div class="container course-page__top">
+      <Breadcrumbs
+        items={[
+          { label: 'Главная', href: '/' },
+          { label: category?.name ?? 'Категория', href: `/${category?.slug}/` },
+          { label: d.title },
+        ]}
+      />
+
+      <div class="course-page__hero">
+        <div class="course-page__main">
+          <div class="course-page__badges">
+            {d.isDemo && <Badge variant="demo">Демо</Badge>}
+            {d.isFree && <Badge variant="free">Бесплатно</Badge>}
+            {!d.isFree && <Badge variant="paid">Платно</Badge>}
+            {d.hasFreeTrial && <Badge variant="trial">Пробный урок</Badge>}
+            <Badge>{formatLevel(d.level)}</Badge>
+          </div>
+          <h1>{d.title}</h1>
+          <p class="course-page__school">{schoolOrAuthor}</p>
+          <p class="course-page__summary">{d.shortDescription}</p>
+
+          {d.isDemo && <p class="course-page__demo-note">{d.disclaimer}</p>}
+
+          <div class="course-page__params">
+            <div>
+              <span>Формат</span><strong>{formatFormat(d.format)}</strong>
+            </div>
+            {
+              d.duration && (
+                <div>
+                  <>
+                    <span>Длительность</span>
+                    <strong>{d.duration}</strong>
+                  </>
+                </div>
+              )
+            }
+            <div>
+              <span>Обратная связь</span><strong
+                >{d.feedback ? 'Да' : 'Нет'}</strong
+              >
+            </div>
+            <div>
+              <span>Сертификат</span><strong
+                >{d.certificate ? 'Да' : 'Нет'}</strong
+              >
+            </div>
+          </div>
+
+          {
+            d.audience.length > 0 && (
+              <div class="course-page__audience">
+                <h2>Кому подойдёт</h2>
+                <ul>
+                  {d.audience.map((a) => (
+                    <li>{a}</li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+
+        <aside class="course-page__sidebar">
+          <div class="course-page__card">
+            <div class="course-page__cover">
+              {
+                d.image ? (
+                  <img
+                    src={d.image}
+                    alt=""
+                    loading="lazy"
+                    width="400"
+                    height="240"
+                  />
+                ) : (
+                  <CoursePlaceholder categoryId={d.category} />
+                )
+              }
+            </div>
+            <div class="course-page__card-body">
+              <div class="course-page__price">{priceText}</div>
+              <time
+                class="course-page__checked"
+                datetime={d.checkedAt.toISOString()}
+              >
+                Проверено {
+                  d.checkedAt.toLocaleDateString('ru-RU', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric',
+                  })
+                }
+              </time>
+              <p class="course-page__notice">
+                Вы перейдёте на официальный сайт. Условия и стоимость могут
+                изменяться.
+              </p>
+              <AffiliateButton
+                courseId={d.id}
+                courseTitle={d.title}
+                category={d.category}
+                school={schoolOrAuthor}
+                isFree={d.isFree}
+                affiliateUrl={d.affiliateUrl}
+                buttonType="detail"
+                fullWidth={true}
+              />
+              <div class="course-page__tools">
+                <FavoriteButton
+                  courseId={d.id}
+                  courseSlug={slug}
+                  courseTitle={d.title}
+                />
+                <CompareButton
+                  courseId={d.id}
+                  courseSlug={slug}
+                  courseTitle={d.title}
+                />
+              </div>
+              <Disclosure
+                compact
+                text="Материал содержит партнёрскую ссылку."
+              />
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+
+    <div class="container course-page__sections">
+      {
+        d.learningOutcomes.length > 0 && (
+          <section class="course-section">
+            <h2>Чему обучают</h2>
+            <ul>
+              {d.learningOutcomes.map((o) => (
+                <li>{o}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        d.curriculum.length > 0 && (
+          <section class="course-section">
+            <h2>Программа обучения</h2>
+            <ol>
+              {d.curriculum.map((m) => (
+                <li>{m}</li>
+              ))}
+            </ol>
+          </section>
+        )
+      }
+
+      {
+        d.fullDescription && (
+          <section class="course-section">
+            <h2>Описание</h2>
+            <p>{d.fullDescription}</p>
+          </section>
+        )
+      }
+
+      {
+        d.advantages.length > 0 && (
+          <section class="course-section course-section--alt">
+            <h2>Преимущества</h2>
+            <ul class="check-list">
+              {d.advantages.map((a) => (
+                <li>{a}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        d.limitations.length > 0 && (
+          <section class="course-section">
+            <h2>Возможные ограничения</h2>
+            <ul>
+              {d.limitations.map((l) => (
+                <li>{l}</li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+
+      {
+        d.category === 'zdorove' && (
+          <p class="course-page__disclaimer">{siteConfig.healthDisclaimer}</p>
+        )
+      }
+      {
+        d.tags.includes('income') && (
+          <p class="course-page__disclaimer">{siteConfig.incomeDisclaimer}</p>
+        )
+      }
+
+      <section class="course-section course-section--alt">
+        <FAQ items={courseFaq} title="Вопросы о программе" />
+      </section>
+    </div>
+  </article>
+
+  <RelatedCourses courses={similar} currentSlug={slug} />
+  {
+    sameSchool.length > 0 && (
+      <RelatedCourses
+        courses={sameSchool}
+        currentSlug={slug}
+        title="Другие программы этой школы"
+      />
+    )
+  }
+</BaseLayout>
+
+<style>
+  .course-page {
+    padding-bottom: var(--space-10);
+  }
+  .course-page__top {
+    padding-block: var(--space-6) var(--space-8);
+  }
+  .course-page__hero {
+    display: grid;
+    gap: var(--space-8);
+    margin-top: var(--space-5);
+  }
+  @media (min-width: 960px) {
+    .course-page__hero {
+      grid-template-columns: 1fr 300px;
+      align-items: start;
+    }
+  }
+  .course-page__badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+  .course-page h1 {
+    margin: 0 0 var(--space-2);
+    font-size: clamp(var(--text-xl), 3.5vw, var(--text-2xl));
+    line-height: 1.2;
+    max-width: 28ch;
+  }
+  .course-page__school {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+  .course-page__summary {
+    margin: 0 0 var(--space-5);
+    color: var(--color-text-muted);
+    line-height: 1.6;
+    max-width: 44rem;
+  }
+  .course-page__demo-note {
+    margin: 0 0 var(--space-5);
+    padding: var(--space-3);
+    background: #f8fafc;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    border-left: 3px solid var(--color-border);
+  }
+  .course-page__params {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-6);
+  }
+  .course-page__params span {
+    display: block;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    margin-bottom: 0.15rem;
+  }
+  .course-page__params strong {
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+  .course-page__audience h2 {
+    font-size: var(--text-base);
+    margin: 0 0 var(--space-3);
+  }
+  .course-page__audience ul {
+    margin: 0;
+    padding-left: 1.1rem;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+  }
+  .course-page__sidebar {
+    position: relative;
+  }
+  @media (min-width: 960px) {
+    .course-page__card {
+      position: sticky;
+      top: calc(var(--header-height) + 1rem);
+    }
+  }
+  .course-page__card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .course-page__cover {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--cat-soft, var(--color-primary-soft));
+  }
+  .course-page__cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .course-page__card-body {
+    padding: var(--space-4);
+    display: grid;
+    gap: var(--space-3);
+  }
+  .course-page__price {
+    font-family: var(--font-heading);
+    font-size: var(--text-lg);
+    font-weight: 700;
+  }
+  .course-page__checked {
+    font-size: var(--text-xs);
+    color: #94a3b8;
+  }
+  .course-page__notice {
+    margin: 0;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+  }
+  .course-page__tools {
+    display: flex;
+    gap: var(--space-2);
+  }
+  .course-page__sections {
+    display: grid;
+    gap: var(--space-6);
+    padding-bottom: var(--space-8);
+  }
+  .course-section {
+    padding: var(--space-6);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .course-section--alt {
+    background: var(--color-bg);
+  }
+  .course-section h2 {
+    margin: 0 0 var(--space-4);
+    font-size: var(--text-lg);
+  }
+  .course-section p,
+  .course-section li {
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+  .check-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .check-list li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: var(--space-2);
+  }
+  .check-list li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-primary);
+    font-weight: 700;
+  }
+  .course-page__disclaimer {
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-bg);
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    line-height: 1.5;
+    margin: 0;
+  }
+</style>
