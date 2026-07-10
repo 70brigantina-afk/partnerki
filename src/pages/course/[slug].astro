@@ -3,13 +3,20 @@ import BaseLayout from '@/layouts/BaseLayout.astro';
 import Breadcrumbs from '@/components/Breadcrumbs.astro';
 import Badge from '@/components/Badge.astro';
 import Disclosure from '@/components/Disclosure.astro';
+import AdMarking from '@/components/AdMarking.astro';
 import AffiliateButton from '@/components/AffiliateButton.astro';
 import FavoriteButton from '@/components/FavoriteButton.astro';
 import CompareButton from '@/components/CompareButton.astro';
 import RelatedCourses from '@/components/RelatedCourses.astro';
 import CoursePlaceholder from '@/components/CoursePlaceholder.astro';
 import FAQ from '@/components/FAQ.astro';
-import { getPublicCourses, formatLevel, formatFormat } from '@/utils/courses';
+import LastChecked from '@/components/LastChecked.astro';
+import {
+  getPublicCourses,
+  formatLevel,
+  formatFormat,
+  formatCourseType,
+} from '@/utils/courses';
 import { getCategoryById } from '@/config/categories';
 import { siteConfig } from '@/config/site';
 
@@ -117,7 +124,11 @@ const courseFaq = [
 
           <div class="course-page__params">
             <div>
-              <span>Формат</span><strong>{formatFormat(d.format)}</strong>
+              <span>Формат</span><strong
+                >{
+                  d.type ? formatCourseType(d.type) : formatFormat(d.format)
+                }</strong
+              >
             </div>
             {
               d.duration && (
@@ -214,8 +225,9 @@ const courseFaq = [
               </div>
               <Disclosure
                 compact
-                text="Материал содержит партнёрскую ссылку."
+                text={d.disclaimer || 'Материал содержит партнёрскую ссылку.'}
               />
+              <LastChecked date={d.checkedAt} />
             </div>
           </div>
         </aside>
@@ -223,6 +235,8 @@ const courseFaq = [
     </div>
 
     <div class="container course-page__sections">
+      <AdMarking course={d} />
+
       {
         d.learningOutcomes.length > 0 && (
           <section class="course-section">
@@ -287,6 +301,16 @@ const courseFaq = [
       {
         d.category === 'zdorove' && (
           <p class="course-page__disclaimer">{siteConfig.healthDisclaimer}</p>
+        )
+      }
+      {
+        d.category === 'psihologiya' && d.disclaimer && (
+          <p class="course-page__disclaimer">{d.disclaimer}</p>
+        )
+      }
+      {
+        d.category === 'zdorove' && d.disclaimer && (
+          <p class="course-page__disclaimer">{d.disclaimer}</p>
         )
       }
       {

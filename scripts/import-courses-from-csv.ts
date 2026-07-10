@@ -36,8 +36,55 @@ const VALID_TYPES = [
   'intensive',
   'marathon',
   'course',
+  'masterclass',
+  'webinar',
+  'checklist',
+  'training',
+  'test',
+  'test_drive',
+  'practicum',
+  'video_lesson',
+  'collection',
 ] as const;
 const VALID_STATUSES = ['draft', 'active', 'paused', 'archived'] as const;
+const VALID_AD_USE_CODES = [
+  'manual_check_before_ads',
+  'site_only_no_paid_ads',
+  'ads_allowed_after_manual_check',
+] as const;
+
+const LEVEL_ALIASES: Record<string, (typeof VALID_LEVELS)[number]> = {
+  beginner: 'beginner',
+  intermediate: 'intermediate',
+  advanced: 'advanced',
+  'для начинающих': 'beginner',
+  начинающий: 'beginner',
+  новичок: 'beginner',
+  средний: 'intermediate',
+  'средний уровень': 'intermediate',
+  продвинутый: 'advanced',
+};
+
+const FORMAT_ALIASES: Record<string, (typeof VALID_FORMATS)[number]> = {
+  video: 'video',
+  live: 'live',
+  mixed: 'mixed',
+  text: 'text',
+  webinar: 'webinar',
+  'self-paced': 'self-paced',
+  masterclass: 'webinar',
+  intensive: 'mixed',
+  course: 'video',
+  profession: 'video',
+  checklist: 'text',
+  training: 'live',
+  test: 'text',
+  test_drive: 'text',
+  practicum: 'mixed',
+  marathon: 'mixed',
+  video_lesson: 'video',
+  collection: 'text',
+};
 
 const REQUIRED_FIELDS = [
   'id',
@@ -48,8 +95,6 @@ const REQUIRED_FIELDS = [
   'seoDescription',
   'checkedAt',
 ] as const;
-
-const ACTIVE_REQUIRED_FIELDS = [...REQUIRED_FIELDS, 'affiliateUrl'] as const;
 
 const FORBIDDEN_URL_MARKERS = [
   '#',
@@ -123,6 +168,10 @@ interface ImportSummary {
   errors: RowIssue[];
   warnings: RowIssue[];
   plannedFiles: string[];
+  blockedPaid: string[];
+  incompleteMarkingFree: string[];
+  duplicateSlugs: string[];
+  duplicateAffiliateUrls: string[];
 }
 
 function parseArgs(argv: string[]) {
@@ -348,6 +397,14 @@ function buildMarkdown(course: ParsedCourse): string {
     ['seoDescription', course.frontmatter.seoDescription],
     ['disclaimer', course.frontmatter.disclaimer],
     ['isDemo', course.frontmatter.isDemo],
+    ['advertiserName', course.frontmatter.advertiserName],
+    ['advertiserINN', course.frontmatter.advertiserINN],
+    ['advertiserOKVED', course.frontmatter.advertiserOKVED],
+    ['advertisingContract', course.frontmatter.advertisingContract],
+    ['erid', course.frontmatter.erid],
+    ['markingComplete', course.frontmatter.markingComplete],
+    ['adUseCode', course.frontmatter.adUseCode],
+    ['adUsePolicy', course.frontmatter.adUsePolicy],
   ];
 
   for (const [key, value] of entries) {
@@ -401,40 +458,55 @@ function parseCourseRow(
     });
   }
 
-  let status = (row.status?.trim() ||
-    'draft') as (typeof VALID_STATUSES)[number];
-  if (!VALID_STATUSES.includes(status)) {
+  // Импорт всегда создаёт черновики — публикация только вручную.
+  const status: (typeof VALID_STATUSES)[number] = 'draft';
+  if (row.status?.trim() && row.status.trim() !== 'draft') {
     issues.push({
       rowNumber,
       id: row.id,
       slug: row.slug,
-      level: 'error',
-      message: `Недопустимый status "${row.status}". Допустимые значения: ${VALID_STATUSES.join(', ')}.`,
-    });
-    status = 'draft';
-  }
-
-  const level = (row.level?.trim() ||
-    'beginner') as (typeof VALID_LEVELS)[number];
-  if (row.level?.trim() && !VALID_LEVELS.includes(level)) {
-    issues.push({
-      rowNumber,
-      id: row.id,
-      slug: row.slug,
-      level: 'error',
-      message: `Недопустимый level "${row.level}". Допустимые значения: ${VALID_LEVELS.join(', ')}.`,
+      level: 'warning',
+      message: `Статус "${row.status}" принудительно заменён на draft.`,
     });
   }
 
-  const format = (row.format?.trim() ||
-    'video') as (typeof VALID_FORMATS)[number];
-  if (row.format?.trim() && !VALID_FORMATS.includes(format)) {
+  const rawLevel = row.level?.trim() || 'beginner';
+  const level =
+    LEVEL_ALIASES[rawLevel.toLowerCase()] ??
+    (VALID_LEVELS.includes(rawLevel as (typeof VALID_LEVELS)[number])
+      ? (rawLevel as (typeof VALID_LEVELS)[number])
+      : null);
+  if (!level) {
     issues.push({
       rowNumber,
       id: row.id,
       slug: row.slug,
       level: 'error',
-      message: `Недопустимый format "${row.format}". Допустимые значения: ${VALID_FORMATS.join(', ')}.`,
+      message: `Недопустимый level "${row.level}". Допустимые значения: ${VALID_LEVELS.join(', ')} или «Для начинающих».`,
+    });
+  }
+
+  const rawFormat = row.format?.trim() || 'video';
+  const format =
+    FORMAT_ALIASES[rawFormat.toLowerCase()] ??
+    (VALID_FORMATS.includes(rawFormat as (typeof VALID_FORMATS)[number])
+      ? (rawFormat as (typeof VALID_FORMATS)[number])
+      : null);
+  if (!format) {
+    issues.push({
+      rowNumber,
+      id: row.id,
+      slug: row.slug,
+      level: 'error',
+      message: `Недопустимый format "${row.format}".`,
+    });
+  } else if (rawFormat !== format) {
+    issues.push({
+      rowNumber,
+      id: row.id,
+      slug: row.slug,
+      level: 'warning',
+      message: `format "${rawFormat}" сопоставлен с "${format}" для схемы сайта.`,
     });
   }
 
@@ -544,6 +616,64 @@ function parseCourseRow(
     false,
   );
   const priority = parseNumber(row.priority, 'priority', rowNumber, issues, 0);
+  const markingComplete = parseBoolean(
+    row.markingComplete,
+    'markingComplete',
+    rowNumber,
+    issues,
+    false,
+  );
+  const adUseCodeRaw = row.adUseCode?.trim() ?? '';
+  const adUseCode = adUseCodeRaw
+    ? (adUseCodeRaw as (typeof VALID_AD_USE_CODES)[number])
+    : undefined;
+  if (adUseCode && !VALID_AD_USE_CODES.includes(adUseCode)) {
+    issues.push({
+      rowNumber,
+      id: row.id,
+      slug: row.slug,
+      level: 'error',
+      message: `Недопустимый adUseCode "${adUseCodeRaw}". Допустимые: ${VALID_AD_USE_CODES.join(', ')}.`,
+    });
+  }
+
+  // Правило: платный оффер без ссылки или полной маркировки — пропуск.
+  if (!isFree) {
+    if (!affiliateUrl || !markingComplete) {
+      issues.push({
+        rowNumber,
+        id: row.id,
+        slug: row.slug,
+        level: 'error',
+        message:
+          'Платный продукт пропущен: нужна affiliateUrl и markingComplete=true.',
+      });
+      return null;
+    }
+  }
+
+  // Правило: бесплатный с неполной маркировкой — только site_only_no_paid_ads.
+  if (isFree && !markingComplete) {
+    if (adUseCode !== 'site_only_no_paid_ads') {
+      issues.push({
+        rowNumber,
+        id: row.id,
+        slug: row.slug,
+        level: 'error',
+        message:
+          'Бесплатный продукт с неполной маркировкой допускается только при adUseCode=site_only_no_paid_ads.',
+      });
+      return null;
+    }
+    issues.push({
+      rowNumber,
+      id: row.id,
+      slug: row.slug,
+      level: 'warning',
+      message:
+        'Неполная маркировка: размещение только на сайте, без платной рекламы (site_only_no_paid_ads).',
+    });
+  }
 
   if (
     issues.some(
@@ -553,23 +683,25 @@ function parseCourseRow(
     return null;
   }
 
+  if (!level || !format) return null;
+
   const frontmatter: Record<string, unknown> = {
     id: row.id?.trim(),
     title: row.title?.trim(),
     shortTitle: row.shortTitle?.trim() || row.title?.trim(),
     category,
-    subcategory: row.subcategory?.trim(),
-    school: row.school?.trim(),
-    author: row.author?.trim(),
+    subcategory: row.subcategory?.trim() || undefined,
+    school: row.school?.trim() || undefined,
+    author: row.author?.trim() || undefined,
     shortDescription: row.shortDescription?.trim(),
-    fullDescription: row.fullDescription?.trim(),
+    fullDescription: row.fullDescription?.trim() || undefined,
     type,
     isFree,
     hasFreeTrial,
-    priceText: row.priceText?.trim(),
+    priceText: row.priceText?.trim() || undefined,
     level,
     format,
-    duration: row.duration?.trim(),
+    duration: row.duration?.trim() || undefined,
     audience: parseList(row.audience),
     learningOutcomes: parseList(row.learningOutcomes),
     curriculum: parseList(row.curriculum),
@@ -577,10 +709,10 @@ function parseCourseRow(
     limitations: parseList(row.limitations),
     certificate,
     feedback,
-    image: row.image?.trim(),
+    image: row.image?.trim() || undefined,
     officialUrl,
     affiliateUrl,
-    partnerProgram: row.partnerProgram?.trim(),
+    partnerProgram: row.partnerProgram?.trim() || undefined,
     tags: parseList(row.tags),
     featured,
     recommended,
@@ -595,26 +727,15 @@ function parseCourseRow(
       row.disclaimer?.trim() ||
       'Информация носит справочный характер. Перед записью уточните условия на сайте организатора.',
     isDemo: false,
+    advertiserName: row.advertiserName?.trim() || undefined,
+    advertiserINN: row.advertiserINN?.trim() || undefined,
+    advertiserOKVED: row.advertiserOKVED?.trim() || undefined,
+    advertisingContract: row.advertisingContract?.trim() || undefined,
+    erid: row.erid?.trim() || undefined,
+    markingComplete,
+    adUseCode,
+    adUsePolicy: row.adUsePolicy?.trim() || undefined,
   };
-
-  if (status === 'active') {
-    const missing = ACTIVE_REQUIRED_FIELDS.filter((field) => {
-      const value = frontmatter[field];
-      return value === undefined || value === '';
-    });
-    if (missing.length) {
-      frontmatter.status = 'draft';
-      issues.push({
-        rowNumber,
-        id: row.id,
-        slug,
-        level: 'warning',
-        message: `Статус active недоступен: не заполнены поля ${missing.join(', ')}. Программа будет импортирована как draft.`,
-      });
-    }
-  }
-
-  if (!frontmatter.status) frontmatter.status = 'draft';
 
   const body =
     row.fullDescription?.trim() ||
@@ -687,6 +808,36 @@ function printSummary(
   console.info(`Ошибок: ${summary.errors.length}`);
   console.info(`Предупреждений: ${summary.warnings.length}`);
 
+  if (summary.blockedPaid.length) {
+    console.info(
+      `\nПлатные офферы заблокированы (${summary.blockedPaid.length}):`,
+    );
+    for (const item of summary.blockedPaid) console.info(`  - ${item}`);
+  }
+
+  if (summary.incompleteMarkingFree.length) {
+    console.info(
+      `\nБесплатные с неполной маркировкой (${summary.incompleteMarkingFree.length}):`,
+    );
+    for (const item of summary.incompleteMarkingFree)
+      console.info(`  - ${item}`);
+  }
+
+  if (summary.duplicateSlugs.length) {
+    console.info(
+      `\nДубли slug: ${[...new Set(summary.duplicateSlugs)].join(', ')}`,
+    );
+  }
+
+  if (summary.duplicateAffiliateUrls.length) {
+    console.info(
+      `\nДубли affiliateUrl (${summary.duplicateAffiliateUrls.length}):`,
+    );
+    for (const url of [...new Set(summary.duplicateAffiliateUrls)]) {
+      console.info(`  - ${url}`);
+    }
+  }
+
   if (summary.plannedFiles.length) {
     console.info(`\n${dryRun ? 'Планируемые файлы' : 'Созданные файлы'}:`);
     for (const file of summary.plannedFiles) {
@@ -739,10 +890,15 @@ function main() {
     errors: [],
     warnings: [],
     plannedFiles: [],
+    blockedPaid: [],
+    incompleteMarkingFree: [],
+    duplicateSlugs: [],
+    duplicateAffiliateUrls: [],
   };
 
   const existingSlugs = getExistingSlugs();
   const batchSlugs = new Set<string>();
+  const batchAffiliateUrls = new Set<string>();
 
   for (let index = 0; index < dataRows.length; index += 1) {
     const rowNumber = index + 2;
@@ -754,6 +910,21 @@ function main() {
     const rowWarnings = rowIssues.filter((issue) => issue.level === 'warning');
     summary.errors.push(...rowErrors);
     summary.warnings.push(...rowWarnings);
+
+    for (const issue of rowErrors) {
+      if (issue.message.includes('Платный продукт пропущен')) {
+        summary.blockedPaid.push(
+          `${row.id ?? 'без-id'}: ${row.title ?? row.slug ?? 'без названия'}`,
+        );
+      }
+    }
+    for (const issue of rowWarnings) {
+      if (issue.message.includes('Неполная маркировка')) {
+        summary.incompleteMarkingFree.push(
+          `${row.id ?? 'без-id'}: ${row.title ?? row.slug ?? 'без названия'}`,
+        );
+      }
+    }
 
     if (!parsed) {
       summary.skipped += 1;
@@ -768,10 +939,28 @@ function main() {
         level: 'error',
         message: `Дублирующийся slug "${parsed.slug}" в таблице.`,
       });
+      summary.duplicateSlugs.push(parsed.slug);
       summary.skipped += 1;
       continue;
     }
     batchSlugs.add(parsed.slug);
+
+    const affiliateUrl = String(parsed.frontmatter.affiliateUrl ?? '');
+    if (affiliateUrl) {
+      if (batchAffiliateUrls.has(affiliateUrl)) {
+        summary.errors.push({
+          rowNumber,
+          id: row.id,
+          slug: parsed.slug,
+          level: 'error',
+          message: `Дублирующаяся affiliateUrl. Строка пропущена: ${affiliateUrl}`,
+        });
+        summary.duplicateAffiliateUrls.push(affiliateUrl);
+        summary.skipped += 1;
+        continue;
+      }
+      batchAffiliateUrls.add(affiliateUrl);
+    }
 
     const targetPath = join(COURSES_DIR, `${parsed.slug}.md`);
     const fileExists = existingSlugs.has(parsed.slug);

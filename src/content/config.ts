@@ -15,8 +15,22 @@ const courseType = z.enum([
   'intensive',
   'marathon',
   'course',
+  'masterclass',
+  'webinar',
+  'checklist',
+  'training',
+  'test',
+  'test_drive',
+  'practicum',
+  'video_lesson',
+  'collection',
 ]);
 const courseStatus = z.enum(['draft', 'active', 'paused', 'archived']);
+const adUseCode = z.enum([
+  'manual_check_before_ads',
+  'site_only_no_paid_ads',
+  'ads_allowed_after_manual_check',
+]);
 
 export const courseSchema = z.object({
   id: z.string(),
@@ -75,6 +89,14 @@ export const courseSchema = z.object({
     )
     .default([]),
   durationCategory: z.enum(['short', 'long']).optional(),
+  advertiserName: z.string().optional(),
+  advertiserINN: z.string().optional(),
+  advertiserOKVED: z.string().optional(),
+  advertisingContract: z.string().optional(),
+  erid: z.string().optional(),
+  markingComplete: z.boolean().default(false),
+  adUseCode: adUseCode.optional(),
+  adUsePolicy: z.string().optional(),
 });
 
 export type CourseData = z.infer<typeof courseSchema>;

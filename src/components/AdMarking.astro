@@ -1,0 +1,107 @@
+---
+import type { CourseData } from '@/content/config';
+
+interface Props {
+  course: CourseData;
+}
+
+const { course } = Astro.props;
+const hasMarking =
+  Boolean(course.advertiserName) ||
+  Boolean(course.advertiserINN) ||
+  Boolean(course.advertisingContract) ||
+  Boolean(course.erid);
+const siteOnly = course.adUseCode === 'site_only_no_paid_ads';
+---
+
+{
+  hasMarking || siteOnly ? (
+    <section class="ad-marking" aria-label="Данные рекламодателя">
+      <h2 class="ad-marking__title">Рекламные сведения</h2>
+      {siteOnly && (
+        <p class="ad-marking__warning" role="status">
+          Не использовать для платной рекламы до уточнения маркировки.
+        </p>
+      )}
+      <dl class="ad-marking__list">
+        {course.advertiserName && (
+          <>
+            <dt>Рекламодатель</dt>
+            <dd>{course.advertiserName}</dd>
+          </>
+        )}
+        {course.advertiserINN && (
+          <>
+            <dt>ИНН</dt>
+            <dd>{course.advertiserINN}</dd>
+          </>
+        )}
+        {course.advertiserOKVED && (
+          <>
+            <dt>ОКВЭД</dt>
+            <dd>{course.advertiserOKVED}</dd>
+          </>
+        )}
+        {course.advertisingContract && (
+          <>
+            <dt>Договор</dt>
+            <dd>{course.advertisingContract}</dd>
+          </>
+        )}
+        {course.erid && (
+          <>
+            <dt>ERID</dt>
+            <dd>{course.erid}</dd>
+          </>
+        )}
+      </dl>
+      {course.adUsePolicy && (
+        <p class="ad-marking__policy">{course.adUsePolicy}</p>
+      )}
+    </section>
+  ) : null
+}
+
+<style>
+  .ad-marking {
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+  }
+  .ad-marking__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-base);
+  }
+  .ad-marking__warning {
+    margin: 0 0 var(--space-3);
+    padding: var(--space-3);
+    border-radius: var(--radius-sm);
+    background: #fff7ed;
+    color: #9a3412;
+    font-size: var(--text-sm);
+    font-weight: 600;
+  }
+  .ad-marking__list {
+    display: grid;
+    grid-template-columns: minmax(7rem, auto) 1fr;
+    gap: var(--space-2) var(--space-3);
+    margin: 0;
+    font-size: var(--text-sm);
+  }
+  .ad-marking__list dt {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-weight: 500;
+  }
+  .ad-marking__list dd {
+    margin: 0;
+    color: var(--color-text);
+  }
+  .ad-marking__policy {
+    margin: var(--space-3) 0 0;
+    font-size: var(--text-xs);
+    color: var(--color-text-muted);
+  }
+</style>

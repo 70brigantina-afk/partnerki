@@ -151,3 +151,25 @@ export function formatFormat(format: CourseData['format']): string {
   };
   return map[format];
 }
+
+export function formatCourseType(
+  type: NonNullable<CourseData['type']>,
+): string {
+  const map: Record<NonNullable<CourseData['type']>, string> = {
+    profession: 'Профессия',
+    skill: 'Навык',
+    intensive: 'Интенсив',
+    marathon: 'Марафон',
+    course: 'Курс',
+    masterclass: 'Мастер-класс',
+    webinar: 'Вебинар',
+    checklist: 'Чек-лист',
+    training: 'Тренинг',
+    test: 'Тест',
+    test_drive: 'Тест-драйв',
+    practicum: 'Практикум',
+    video_lesson: 'Видеоурок',
+    collection: 'Подборка',
+  };
+  return map[type];
+}
