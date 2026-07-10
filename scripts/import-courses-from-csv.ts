@@ -177,7 +177,8 @@ interface ImportSummary {
 function parseArgs(argv: string[]) {
   const dryRun = argv.includes('--dry-run');
   const force = argv.includes('--force');
-  const inputIndex = argv.indexOf('--input');
+  // Берём последнее --input, чтобы npm-скрипт можно было переопределить аргументом.
+  const inputIndex = argv.lastIndexOf('--input');
   const input =
     inputIndex !== -1 && argv[inputIndex + 1]
       ? join(process.cwd(), argv[inputIndex + 1])
