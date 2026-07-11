@@ -4,7 +4,7 @@ export const siteConfig = {
     'Помогаем подобрать обучение под вашу цель, уровень подготовки и бюджет',
   description:
     'Каталог онлайн-обучений: бесплатные интенсивы, пробные уроки и образовательные программы по востребованным направлениям.',
-  domain: 'https://example.github.io/navigator-obucheniya',
+  domain: 'https://learn.iamcore.ru',
   email: 'info@example.com',
   social: {
     telegram: '',

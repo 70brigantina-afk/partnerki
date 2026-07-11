@@ -2,9 +2,7 @@ import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
 import sitemap from '@astrojs/sitemap';
 
-const site =
-  process.env.PUBLIC_SITE_URL ||
-  'https://example.github.io/navigator-obucheniya';
+const site = process.env.PUBLIC_SITE_URL || 'https://learn.iamcore.ru';
 
 export default defineConfig({
   site,
