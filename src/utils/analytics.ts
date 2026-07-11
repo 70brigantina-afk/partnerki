@@ -1,4 +1,5 @@
 import type { UtmParams } from './utm';
+import { hasAnalyticsConsent } from './analytics-consent';
 
 export interface AffiliateClickEvent {
   courseId: string;
@@ -20,6 +21,7 @@ declare global {
 
 export function trackAffiliateClick(event: AffiliateClickEvent): void {
   if (typeof window === 'undefined') return;
+  if (!hasAnalyticsConsent()) return;
 
   const payload = {
     courseId: event.courseId,
@@ -51,6 +53,8 @@ export function trackAffiliateClick(event: AffiliateClickEvent): void {
 }
 
 export function initAnalytics(): void {
+  if (!hasAnalyticsConsent()) return;
+
   const metrikaId = import.meta.env.PUBLIC_YANDEX_METRIKA_ID;
   if (!metrikaId || typeof document === 'undefined') return;
 
@@ -62,15 +66,17 @@ export function initAnalytics(): void {
   const script = document.createElement('script');
   script.id = 'yandex-metrika';
   script.async = true;
-  script.src = `https://mc.yandex.ru/metrika/tag.js`;
+  script.src = 'https://mc.yandex.ru/metrika/tag.js';
   document.head.appendChild(script);
 
   script.onload = () => {
     if (typeof window.ym === 'function') {
       window.ym(id, 'init', {
-        clickmap: true,
+        clickmap: false,
         trackLinks: true,
         accurateTrackBounce: true,
+        webvisor: false,
+        ecommerce: false,
       });
     }
   };

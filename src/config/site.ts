@@ -5,7 +5,7 @@ export const siteConfig = {
   description:
     'Каталог онлайн-обучений: бесплатные интенсивы, пробные уроки и образовательные программы по востребованным направлениям.',
   domain: 'https://learn.iamcore.ru',
-  email: 'info@example.com',
+  email: 'myownjob@list.ru',
   social: {
     telegram: '',
     vk: '',
@@ -27,10 +27,13 @@ export const siteConfig = {
   },
   yandexMetrikaId: import.meta.env.PUBLIC_YANDEX_METRIKA_ID || '',
   legal: {
-    companyName: 'Навигатор обучения',
-    inn: '',
-    ogrn: '',
-    address: '',
+    ownerName: 'ИП Юсупова Ирина Фаид-Бековна',
+    companyName: 'ИП Юсупова Ирина Фаид-Бековна',
+    inn: '261403611777',
+    ogrnip: '304264615400017',
+    email: 'myownjob@list.ru',
+    documentDate: '11 июля 2026 года',
+    policyVersion: '2026-07-11',
   },
   affiliateDisclosure:
     'На сайте могут использоваться партнёрские ссылки. Проект может получать вознаграждение, если пользователь зарегистрируется или приобретёт программу после перехода по такой ссылке. Это не увеличивает стоимость обучения для пользователя.',

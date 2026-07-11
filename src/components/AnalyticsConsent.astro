@@ -1,0 +1,197 @@
+---
+
+---
+
+<div
+  class="analytics-consent"
+  data-analytics-consent-root
+  data-mode="banner"
+  hidden
+>
+  <div
+    class="analytics-consent__panel"
+    data-analytics-consent-panel
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="analytics-consent-title"
+    tabindex="-1"
+  >
+    <h2 class="analytics-consent__title" id="analytics-consent-title">
+      Cookies и аналитика
+    </h2>
+    <p class="analytics-consent__text">
+      Сайт использует локальное хранилище для избранного и сравнения. Аналитика
+      Яндекс Метрики включается только с вашего разрешения.
+    </p>
+    <p class="analytics-consent__links">
+      <a href="/politika-konfidentsialnosti/"
+        >Политика обработки персональных данных</a
+      >
+      <span aria-hidden="true">·</span>
+      <a href="/cookies/">Cookies и аналитика</a>
+    </p>
+    <div class="analytics-consent__actions">
+      <button
+        class="analytics-consent__btn analytics-consent__btn--primary"
+        type="button"
+        data-consent-action="granted"
+      >
+        Разрешить аналитику
+      </button>
+      <button
+        class="analytics-consent__btn analytics-consent__btn--secondary"
+        type="button"
+        data-consent-action="denied"
+      >
+        Только необходимые
+      </button>
+    </div>
+    <button
+      class="analytics-consent__close"
+      type="button"
+      data-consent-close
+      aria-label="Закрыть настройки"
+    >
+      Закрыть
+    </button>
+  </div>
+</div>
+
+<script>
+  import { initAnalyticsConsent } from '@/utils/analytics-consent-client';
+
+  initAnalyticsConsent();
+</script>
+
+<style is:global>
+  .analytics-consent {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 1200;
+    padding: var(--space-4);
+    pointer-events: none;
+  }
+
+  .analytics-consent:not([hidden]) {
+    pointer-events: auto;
+  }
+
+  .analytics-consent__panel {
+    max-width: 42rem;
+    margin: 0 auto;
+    padding: var(--space-5);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+  }
+
+  .analytics-consent__title {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-lg);
+  }
+
+  .analytics-consent__text,
+  .analytics-consent__links {
+    margin: 0 0 var(--space-4);
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  .analytics-consent__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.5rem;
+  }
+
+  .analytics-consent__actions {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 560px) {
+    .analytics-consent__actions {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .analytics-consent__btn {
+    width: 100%;
+    min-height: 2.75rem;
+    padding: 0.65rem 1rem;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background var(--transition),
+      border-color var(--transition),
+      color var(--transition);
+  }
+
+  .analytics-consent__btn--primary {
+    border: 1px solid var(--color-primary);
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  .analytics-consent__btn--secondary {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+  }
+
+  .analytics-consent__btn:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+  }
+
+  .analytics-consent__close {
+    margin-top: var(--space-3);
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  .analytics-consent[data-mode='banner'] .analytics-consent__close {
+    display: none;
+  }
+
+  .analytics-consent-notice {
+    position: fixed;
+    right: var(--space-4);
+    bottom: var(--space-4);
+    left: var(--space-4);
+    z-index: 1300;
+    max-width: 36rem;
+    margin: 0 auto;
+    padding: var(--space-3) var(--space-4);
+    background: #0f172a;
+    color: #f8fafc;
+    border-radius: var(--radius-md);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    box-shadow: var(--shadow-md);
+  }
+
+  .footer__link-btn {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: #94a3b8;
+    font: inherit;
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
+    text-decoration: none;
+  }
+
+  .footer__link-btn:hover {
+    color: #fff;
+  }
+</style>

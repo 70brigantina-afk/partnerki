@@ -1,22 +1,39 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import { siteConfig } from '@/config/site';
+
+const { legal } = siteConfig;
 ---
 
 <BaseLayout
   title="Контакты"
-  description="Свяжитесь с командой Навигатор обучения."
+  description="Контактные данные владельца сайта Навигатор обучения."
 >
   <div class="legal-page container prose">
     <h1>Контакты</h1>
     <p>
-      Если у вас есть вопросы о каталоге, предложения по сотрудничеству или
-      замечания к материалам — напишите нам.
+      По вопросам каталога, замечаниям к материалам, партнёрству и юридическим
+      обращениям используйте контакты ниже.
     </p>
+
+    <h2>Реквизиты</h2>
+    <ul>
+      <li>{legal.companyName}</li>
+      <li>ИНН {legal.inn}</li>
+      <li>ОГРНИП {legal.ogrnip}</li>
+      <li>
+        Email: <a href={`mailto:${legal.email}`}>{legal.email}</a>
+      </li>
+      <li>
+        Сайт: <a href={siteConfig.domain}>{siteConfig.domain}</a>
+      </li>
+    </ul>
+
+    <h2>Важно</h2>
     <p>
-      <strong>Электронная почта:</strong>
-      <a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a>
+      Сайт {siteConfig.name} не принимает оплату за обучение и не оформляет заказы
+      на программы. Регистрация и оплата происходят на сайтах организаторов.
     </p>
-    <p>Мы отвечаем в рабочие дни в течение 1–3 рабочих дней.</p>
+    <p>Мы отвечаем на обращения по email в разумный срок в рабочие дни.</p>
   </div>
 </BaseLayout>

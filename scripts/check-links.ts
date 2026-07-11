@@ -35,6 +35,8 @@ const knownRoutes = new Set([
   '/kontakty',
   '/politika-konfidentsialnosti',
   '/polzovatelskoe-soglashenie',
+  '/cookies',
+  '/soglasie-na-obrabotku-personalnyh-dannyh',
   '/partnerskoe-raskrytie',
   '/reklama',
   '/neyroseti',
