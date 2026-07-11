@@ -94,7 +94,17 @@ const btnClass = `btn btn--primary affiliate-btn ${size === 'sm' ? 'affiliate-bt
     font-size: var(--text-sm);
   }
   .affiliate-btn--full {
+    display: inline-flex;
     width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    line-height: 1.25;
+    text-align: center;
+    height: auto;
   }
   .affiliate-btn.btn--disabled,
   .affiliate-btn[disabled] {
@@ -102,7 +112,9 @@ const btnClass = `btn btn--primary affiliate-btn ${size === 'sm' ? 'affiliate-bt
     text-align: center;
     line-height: 1.25;
     max-width: 100%;
+    min-width: 0;
     overflow-wrap: anywhere;
+    word-break: break-word;
     hyphens: auto;
   }
 </style>

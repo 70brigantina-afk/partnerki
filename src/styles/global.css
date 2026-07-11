@@ -673,6 +673,11 @@ a:hover {
   font-size: var(--text-sm);
   color: #92400e;
   line-height: 1.5;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 .disclosure--compact {
