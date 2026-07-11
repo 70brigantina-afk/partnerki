@@ -12,7 +12,11 @@ import CategoryIcon from '@/components/CategoryIcon.astro';
 import AudienceCards from '@/components/AudienceCards.astro';
 import DemoBanner from '@/components/DemoBanner.astro';
 import { categories } from '@/config/categories';
-import { getRecommendedCourses } from '@/utils/courses';
+import {
+  getRecommendedCourses,
+  preferRealCourses,
+  hasOnlyDemoCourses,
+} from '@/utils/courses';
 import { siteConfig } from '@/config/site';
 
 interface Props {
@@ -28,8 +32,8 @@ interface Props {
 
 const {
   category,
-  courses,
-  allCourses = courses,
+  courses: rawCourses,
+  allCourses: rawAllCourses,
   title = category.name,
   description = category.fullDescription,
   intro,
@@ -37,15 +41,18 @@ const {
   noindex = false,
 } = Astro.props;
 
-const recommended = getRecommendedCourses(courses).slice(0, 3);
+const courses = preferRealCourses(rawCourses);
+const recommended = getRecommendedCourses(courses, 3);
 const otherCategories = categories.filter((c) => c.id !== category.id);
 const courseCounts = Object.fromEntries(
   categories.map((c) => [
     c.id,
-    allCourses.filter((co) => co.data.category === c.id).length,
+    preferRealCourses(
+      (rawAllCourses ?? rawCourses).filter((co) => co.data.category === c.id),
+    ).length,
   ]),
 );
-const hasDemo = courses.some((c) => c.data.isDemo);
+const showDemoBanner = hasOnlyDemoCourses(courses);
 const countLabel =
   courses.length === 1
     ? 'программа'
@@ -121,7 +128,7 @@ const countLabel =
   <section class="section section--compact" id="catalog">
     <div class="container">
       <h2 class="section__title">Все программы направления</h2>
-      {hasDemo && <DemoBanner />}
+      {showDemoBanner && <DemoBanner />}
       <CourseFilters courses={courses} totalCount={courses.length} />
       <CourseGrid courses={courses} />
       <p class="course-grid__empty course-grid__empty-dynamic" hidden>

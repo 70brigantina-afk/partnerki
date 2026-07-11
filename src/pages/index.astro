@@ -14,17 +14,21 @@ import {
   getFeaturedCourses,
   getFreeCourses,
   getSearchIndex,
+  hasOnlyDemoCourses,
 } from '@/utils/courses';
 
 const allCourses = await getPublicCourses();
 const searchIndex = await getSearchIndex();
-const featured = getFeaturedCourses(allCourses).slice(0, 8);
-const hasDemo = allCourses.some((c) => c.data.isDemo);
+const featured = getFeaturedCourses(allCourses, 8);
 const freeByCategory = categories.map((cat) => {
   const catCourses = getCoursesByCategory(allCourses, cat.id);
   const free = getFreeCourses(catCourses)[0];
   return { category: cat, course: free };
 });
+const freeCoursesShown = freeByCategory
+  .map(({ course }) => course)
+  .filter((course): course is NonNullable<typeof course> => Boolean(course));
+const showDemoBanner = hasOnlyDemoCourses(freeCoursesShown);
 
 const homeFaq = [
   {
@@ -230,10 +234,9 @@ const articles = [
     <div class="container">
       <h2 class="section__title">Начните бесплатно</h2>
       <p class="section__subtitle">
-        По одной программе из каждого направления — реальные записи появятся
-        позже
+        По одной бесплатной программе из каждого направления
       </p>
-      {hasDemo && <DemoBanner />}
+      {showDemoBanner && <DemoBanner />}
       <div class="grid grid--3 grid--equal">
         {
           freeByCategory.map(({ category, course }) =>
@@ -243,7 +246,7 @@ const articles = [
               <div class="card card__body">
                 <h3 class="card__title">{category.name}</h3>
                 <p class="card__text">
-                  Программы появятся после добавления активных записей.
+                  Программы этого направления появятся позже.
                 </p>
               </div>
             ),
@@ -267,9 +270,7 @@ const articles = [
             ))}
           </div>
         ) : (
-          <p class="muted">
-            Популярные программы появятся после публикации активных записей.
-          </p>
+          <p class="muted">Популярные программы появятся позже.</p>
         )
       }
     </div>
@@ -279,53 +280,23 @@ const articles = [
     <div class="container">
       <h2 class="section__title">Как работает подбор</h2>
       <p class="section__subtitle">Три шага от цели до выбора программы</p>
-      <div class="steps">
-        <div class="step">
-          <div class="step__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              ><circle
-                cx="12"
-                cy="12"
-                r="9"
-                stroke="currentColor"
-                stroke-width="1.5"></circle><path
-                d="M12 8v4l3 2"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"></path></svg
-            >
-          </div>
+      <ol class="steps">
+        <li class="step">
+          <span class="step__number" aria-hidden="true">1</span>
           <h3>Выберите направление</h3>
           <p>Определите тему и уровень подготовки</p>
-        </div>
-        <div class="step">
-          <div class="step__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              ><path
-                d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"></path></svg
-            >
-          </div>
+        </li>
+        <li class="step">
+          <span class="step__number" aria-hidden="true">2</span>
           <h3>Сравните варианты</h3>
           <p>Используйте фильтры и сравнение до трёх программ</p>
-        </div>
-        <div class="step">
-          <div class="step__icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-              ><path
-                d="M14 3h7v7M10 14L21 3M5 12v7h7"
-                stroke="currentColor"
-                stroke-width="1.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"></path></svg
-            >
-          </div>
+        </li>
+        <li class="step">
+          <span class="step__number" aria-hidden="true">3</span>
           <h3>Перейдите на сайт школы</h3>
           <p>Изучите подробности и зарегистрируйтесь у организатора</p>
-        </div>
-      </div>
+        </li>
+      </ol>
     </div>
   </section>
 
@@ -349,7 +320,10 @@ const articles = [
       <div class="grid grid--3">
         {
           articles.map((a) => (
-            <article class="card card__body">
+            <article class="card card--soon card__body" aria-disabled="true">
+              <div class="card--soon__meta">
+                <span class="badge badge--soon">Скоро</span>
+              </div>
               <h3 class="card__title">{a.title}</h3>
               <p class="card__text">{a.note}</p>
             </article>
@@ -368,6 +342,29 @@ const articles = [
 
 <style>
   .muted {
+    color: var(--color-text-muted);
+  }
+
+  .card--soon {
+    cursor: default;
+    opacity: 0.92;
+    box-shadow: none;
+    background: var(--color-bg);
+    transition: none;
+  }
+
+  .card--soon:hover,
+  .card--soon:focus {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--color-border);
+  }
+
+  .card--soon__meta {
+    margin-bottom: var(--space-3);
+  }
+
+  .card--soon .card__title {
     color: var(--color-text-muted);
   }
 </style>

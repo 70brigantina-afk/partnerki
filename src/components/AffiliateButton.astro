@@ -54,9 +54,10 @@ const btnClass = `btn btn--primary affiliate-btn ${size === 'sm' ? 'affiliate-bt
       class={btnClass}
       type="button"
       disabled
-      title="Ссылка будет добавлена после проверки программы"
+      aria-disabled="true"
+      title="Ссылка пока недоступна"
     >
-      Ссылка будет добавлена после проверки программы
+      Ссылка пока недоступна
     </button>
   )
 }
@@ -94,5 +95,14 @@ const btnClass = `btn btn--primary affiliate-btn ${size === 'sm' ? 'affiliate-bt
   }
   .affiliate-btn--full {
     width: 100%;
+  }
+  .affiliate-btn.btn--disabled,
+  .affiliate-btn[disabled] {
+    white-space: normal;
+    text-align: center;
+    line-height: 1.25;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    hyphens: auto;
   }
 </style>

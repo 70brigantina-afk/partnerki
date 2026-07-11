@@ -1,6 +1,6 @@
 ---
 interface Props {
-  variant?: 'free' | 'paid' | 'trial' | 'demo' | 'default';
+  variant?: 'free' | 'paid' | 'trial' | 'demo' | 'soon' | 'default';
 }
 
 const { variant = 'default' } = Astro.props;
@@ -9,6 +9,7 @@ const classMap = {
   paid: 'badge badge--paid',
   trial: 'badge badge--trial',
   demo: 'badge badge--demo',
+  soon: 'badge badge--soon',
   default: 'badge',
 };
 ---

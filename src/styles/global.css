@@ -292,6 +292,11 @@ a:hover {
   color: var(--color-text-muted);
 }
 
+.badge--soon {
+  background: #f1f5f9;
+  color: var(--color-text-muted);
+}
+
 /* ── Grid ── */
 .grid {
   display: grid;
@@ -540,6 +545,9 @@ a:hover {
   display: grid;
   gap: var(--space-5);
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  margin: 0;
+  padding: 0;
+  list-style: none;
 }
 
 .step {
@@ -547,13 +555,10 @@ a:hover {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  transition: box-shadow var(--transition);
+  cursor: default;
 }
 
-.step:hover {
-  box-shadow: var(--shadow-sm);
-}
-
+.step__number,
 .step__icon {
   display: flex;
   align-items: center;
@@ -564,6 +569,9 @@ a:hover {
   border-radius: var(--radius-md);
   background: var(--color-primary-soft);
   color: var(--color-primary);
+  font-size: var(--text-lg);
+  font-weight: 700;
+  line-height: 1;
 }
 
 .step h3 {

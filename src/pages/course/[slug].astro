@@ -16,6 +16,7 @@ import {
   formatLevel,
   formatFormat,
   formatCourseType,
+  preferRealCourses,
 } from '@/utils/courses';
 import { getCategoryById } from '@/config/categories';
 import { siteConfig } from '@/config/site';
@@ -34,11 +35,13 @@ const slug = course.slug;
 const category = getCategoryById(d.category);
 const theme = category?.theme ?? '';
 const allCourses = await getPublicCourses();
-const sameSchool = allCourses.filter(
-  (c) => c.slug !== slug && c.data.school && c.data.school === d.school,
+const sameSchool = preferRealCourses(
+  allCourses.filter(
+    (c) => c.slug !== slug && c.data.school && c.data.school === d.school,
+  ),
 );
-const similar = allCourses.filter(
-  (c) => c.slug !== slug && c.data.category === d.category,
+const similar = preferRealCourses(
+  allCourses.filter((c) => c.slug !== slug && c.data.category === d.category),
 );
 const schoolOrAuthor = d.school || d.author || 'Организатор уточняется';
 const noindex = d.status !== 'active';
@@ -469,11 +472,13 @@ const courseFaq = [
   }
   .course-page__sections {
     display: grid;
-    gap: var(--space-6);
-    padding-bottom: var(--space-8);
+    gap: var(--space-5);
+    padding-bottom: var(--space-6);
   }
   .course-section {
-    padding: var(--space-6);
+    height: auto;
+    min-height: 0;
+    padding: 1.15rem var(--space-5);
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -482,14 +487,22 @@ const courseFaq = [
     background: var(--color-bg);
   }
   .course-section h2 {
-    margin: 0 0 var(--space-4);
+    margin: 0 0 var(--space-3);
     font-size: var(--text-lg);
   }
   .course-section p,
   .course-section li {
     color: var(--color-text-muted);
     font-size: var(--text-sm);
-    line-height: 1.6;
+    line-height: 1.55;
+  }
+  .course-section ul,
+  .course-section ol {
+    margin: 0;
+    padding-left: 1.15rem;
+  }
+  .course-section p {
+    margin: 0;
   }
   .check-list {
     list-style: none;

@@ -1,5 +1,6 @@
 ---
 import type { CourseEntry } from '@/utils/courses';
+import { preferRealCourses } from '@/utils/courses';
 import CourseCard from './CourseCard.astro';
 
 interface Props {
@@ -15,7 +16,9 @@ const {
   title = 'Похожие программы',
   limit = 3,
 } = Astro.props;
-const related = courses.filter((c) => c.slug !== currentSlug).slice(0, limit);
+const related = preferRealCourses(
+  courses.filter((c) => c.slug !== currentSlug),
+).slice(0, limit);
 ---
 
 {

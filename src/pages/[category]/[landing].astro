@@ -2,7 +2,7 @@
 import CategoryPageLayout from '@/components/CategoryPageLayout.astro';
 import { landingPages } from '@/config/landing-pages';
 import { getCategoryBySlug } from '@/config/categories';
-import { getPublicCourses } from '@/utils/courses';
+import { getPublicCourses, preferRealCourses } from '@/utils/courses';
 
 export async function getStaticPaths() {
   return landingPages.map((page) => ({
@@ -14,7 +14,9 @@ export async function getStaticPaths() {
 const { page } = Astro.props;
 const baseCategory = getCategoryBySlug(page.categorySlug)!;
 const allCourses = await getPublicCourses();
-const courses = allCourses.filter((c) => page.filter(c.data));
+const courses = preferRealCourses(
+  allCourses.filter((c) => page.filter(c.data)),
+);
 const noindex = courses.every((c) => c.data.status === 'draft');
 const category = {
   ...baseCategory,

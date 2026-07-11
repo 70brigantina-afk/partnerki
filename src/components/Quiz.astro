@@ -24,7 +24,13 @@ const courseData = courses.map((c) => ({
   durationCategory: c.data.durationCategory ?? '',
   recommended: c.data.recommended,
   priority: c.data.priority,
+  isDemo: c.data.isDemo,
 }));
+const levelLabels = {
+  beginner: 'Для начинающих',
+  intermediate: 'Средний уровень',
+  advanced: 'Продвинутый уровень',
+};
 ---
 
 <div class="quiz" data-quiz>
@@ -134,7 +140,7 @@ const courseData = courses.map((c) => ({
   </div>
 </div>
 
-<script is:inline define:vars={{ courseData }}>
+<script is:inline define:vars={{ courseData, levelLabels }}>
   const form = document.getElementById('quiz-form');
   const results = document.getElementById('quiz-results');
   const list = document.getElementById('quiz-results-list');
@@ -160,19 +166,26 @@ const courseData = courses.map((c) => ({
     return s;
   }
 
+  function formatLevelLabel(level) {
+    return levelLabels[level] || level;
+  }
+
   form?.addEventListener('submit', (e) => {
     e.preventDefault();
     const fd = new FormData(form);
     const answers = Object.fromEntries(fd.entries());
-    const ranked = courseData
+    let ranked = courseData
       .map((c) => ({ ...c, score: score(c, answers) }))
       .filter((c) => c.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 5);
+      .sort((a, b) => b.score - a.score);
+
+    const realRanked = ranked.filter((c) => !c.isDemo);
+    if (realRanked.length) ranked = realRanked;
+    ranked = ranked.slice(0, 5);
 
     if (!ranked.length) {
       list.innerHTML =
-        '<p>По вашим ответам подходящих активных программ пока нет. Попробуйте изменить критерии или посмотрите каталог направлений.</p>';
+        '<p>По вашим ответам подходящих программ пока нет. Попробуйте изменить критерии или посмотрите каталог направлений.</p>';
     } else {
       list.innerHTML = ranked
         .map(
@@ -180,7 +193,7 @@ const courseData = courses.map((c) => ({
         <article class="quiz__result card">
           <div class="card__body">
             <h3><a href="/course/${c.slug}/">${c.title}</a></h3>
-            <p>${c.isFree ? 'Бесплатно' : 'Платно'} · ${c.level}</p>
+            <p>${c.isFree ? 'Бесплатно' : 'Платно'} · ${formatLevelLabel(c.level)}${c.isDemo ? ' · Демо' : ''}</p>
             <a class="btn btn--secondary" href="/course/${c.slug}/">Посмотреть подробности</a>
           </div>
         </article>`,

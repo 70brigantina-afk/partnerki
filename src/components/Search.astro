@@ -2,12 +2,17 @@
 interface SearchItem {
   slug: string;
   title: string;
+  shortTitle: string;
   school: string;
   author: string;
   category: string;
+  categoryName: string;
+  categoryDescription: string;
   subcategory: string;
   tags: string[];
   shortDescription: string;
+  fullDescription: string;
+  categoryAliases: string[];
   isFree: boolean;
   level: string;
   isDemo: boolean;
@@ -112,6 +117,62 @@ const formId = variant === 'hero' ? 'hero-search-form' : 'header-search-form';
 </div>
 
 <script is:inline define:vars={{ searchIndex }}>
+  const STOP_WORDS = new Set([
+    'и',
+    'для',
+    'на',
+    'по',
+    'с',
+    'в',
+    'о',
+    'от',
+    'до',
+    'из',
+    'the',
+    'a',
+    'an',
+  ]);
+
+  function normalizeSearchText(value) {
+    return String(value ?? '')
+      .toLowerCase()
+      .replace(/ё/g, 'е')
+      .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function buildHaystack(item) {
+    return normalizeSearchText(
+      [
+        item.title,
+        item.shortTitle,
+        item.school,
+        item.author,
+        item.category,
+        item.categoryName,
+        item.categoryDescription,
+        item.subcategory,
+        item.shortDescription,
+        item.fullDescription,
+        ...(item.tags || []),
+        ...(item.categoryAliases || []),
+      ].join(' '),
+    );
+  }
+
+  function matchesQuery(item, query) {
+    const hay = buildHaystack(item);
+    const q = normalizeSearchText(query);
+    if (!q) return false;
+    if (hay.includes(q)) return true;
+    const tokens = q
+      .split(' ')
+      .filter((token) => token.length > 1 && !STOP_WORDS.has(token));
+    if (!tokens.length) return false;
+    return tokens.every((token) => hay.includes(token));
+  }
+
   const roots = document.querySelectorAll('[data-search-root]');
   roots.forEach((root) => {
     const variant = root.getAttribute('data-variant');
@@ -137,7 +198,7 @@ const formId = variant === 'hero' ? 'hero-search-form' : 'header-search-form';
     }
 
     function search(q) {
-      const query = q.trim().toLowerCase();
+      const query = String(q ?? '').trim();
       if (!query) {
         results.hidden = true;
         results.innerHTML = '';
@@ -145,22 +206,10 @@ const formId = variant === 'hero' ? 'hero-search-form' : 'header-search-form';
         return;
       }
       input?.classList.add('is-active');
-      const matches = searchIndex
-        .filter((item) => {
-          const hay = [
-            item.title,
-            item.school,
-            item.author,
-            item.category,
-            item.subcategory,
-            item.shortDescription,
-            ...item.tags,
-          ]
-            .join(' ')
-            .toLowerCase();
-          return hay.includes(query);
-        })
-        .slice(0, 8);
+      let matches = searchIndex.filter((item) => matchesQuery(item, query));
+      const realMatches = matches.filter((item) => !item.isDemo);
+      if (realMatches.length) matches = realMatches;
+      matches = matches.slice(0, 8);
 
       if (!matches.length) {
         results.innerHTML = '<p class="search__empty">Ничего не найдено</p>';

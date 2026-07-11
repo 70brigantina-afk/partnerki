@@ -1,9 +1,9 @@
 ---
 import BaseLayout from '@/layouts/BaseLayout.astro';
 import Quiz from '@/components/Quiz.astro';
-import { getPublicCourses } from '@/utils/courses';
+import { getPublicCourses, preferRealCourses } from '@/utils/courses';
 
-const courses = await getPublicCourses();
+const courses = preferRealCourses(await getPublicCourses());
 ---
 
 <BaseLayout
