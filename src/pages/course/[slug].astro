@@ -49,6 +49,74 @@ const priceText = d.isFree
   ? 'Бесплатно'
   : (d.priceText ?? 'Уточняйте на сайте организатора');
 
+const requirementPattern =
+  /^(Требуется|Желательн|Необходим|Нужен|Нужна|Нужно|Базовые навыки)/i;
+const requirementItems = d.limitations.filter((item) =>
+  requirementPattern.test(item.trim()),
+);
+const importantItems = d.limitations.filter(
+  (item) => !requirementPattern.test(item.trim()),
+);
+
+function normalizeComparableText(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+    .replace(/[.…]+$/u, '')
+    .trim();
+}
+
+function getProgramDescription(
+  shortDescription: string,
+  fullDescription: string | undefined,
+): string | null {
+  if (!fullDescription?.trim()) return null;
+
+  const shortNorm = normalizeComparableText(shortDescription);
+  const fullNorm = normalizeComparableText(fullDescription);
+
+  if (!fullNorm || fullNorm === shortNorm) return null;
+
+  if (shortNorm.startsWith(fullNorm)) return null;
+
+  if (fullNorm.startsWith(shortNorm)) {
+    const remainder = fullDescription
+      .slice(shortDescription.length)
+      .replace(/^[\s.,;:!—–-]+/u, '')
+      .trim();
+    return remainder.length > 0 ? remainder : null;
+  }
+
+  if (shortNorm.includes(fullNorm) || fullNorm.includes(shortNorm)) {
+    return null;
+  }
+
+  return fullDescription.trim();
+}
+
+function itemDuplicatesDuration(item: string, duration: string): boolean {
+  const durationNorm = normalizeComparableText(duration);
+  const itemNorm = normalizeComparableText(item);
+
+  if (itemNorm.includes(durationNorm)) return true;
+
+  const durationCore = durationNorm.replace(/\s*(обучения|обучение)\s*$/u, '');
+  if (durationCore.length > 0 && itemNorm.includes(durationCore)) return true;
+
+  return /^(около\s+)?\d[\d\s-]*(час|часа|часов|недел|недели|недель|месяц|месяца|месяцев|день|дня|дней|минут|минуты)(?:\s|$)/iu.test(
+    item.trim(),
+  );
+}
+
+const programDescription = getProgramDescription(
+  d.shortDescription,
+  d.fullDescription,
+);
+
+const includesItems = d.duration
+  ? d.curriculum.filter((item) => !itemDuplicatesDuration(item, d.duration!))
+  : [...d.curriculum];
+
 const courseFaq = [
   {
     question: 'Как записаться на программу?',
@@ -167,6 +235,80 @@ const courseFaq = [
               </div>
             )
           }
+
+          {
+            programDescription && (
+              <section class="course-info">
+                <h2>О программе</h2>
+                <p>{programDescription}</p>
+              </section>
+            )
+          }
+
+          {
+            includesItems.length > 0 && (
+              <section class="course-info">
+                <h2>Что входит</h2>
+                <ul>
+                  {includesItems.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          {
+            d.advantages.length > 0 && (
+              <section class="course-info">
+                <h2>Преимущества</h2>
+                <ul>
+                  {d.advantages.map((advantage) => (
+                    <li>{advantage}</li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          {
+            d.learningOutcomes.length > 0 && (
+              <section class="course-info">
+                <h2>Чему обучают</h2>
+                <ul>
+                  {d.learningOutcomes.map((o) => (
+                    <li>{o}</li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          {
+            requirementItems.length > 0 && (
+              <section class="course-info">
+                <h2>Что потребуется</h2>
+                <ul>
+                  {requirementItems.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
+
+          {
+            importantItems.length > 0 && (
+              <section class="course-info">
+                <h2>Важно</h2>
+                <ul>
+                  {importantItems.map((item) => (
+                    <li>{item}</li>
+                  ))}
+                </ul>
+              </section>
+            )
+          }
         </div>
 
         <aside class="course-page__sidebar">
@@ -239,67 +381,6 @@ const courseFaq = [
 
     <div class="container course-page__sections">
       <AdMarking course={d} />
-
-      {
-        d.learningOutcomes.length > 0 && (
-          <section class="course-section">
-            <h2>Чему обучают</h2>
-            <ul>
-              {d.learningOutcomes.map((o) => (
-                <li>{o}</li>
-              ))}
-            </ul>
-          </section>
-        )
-      }
-
-      {
-        d.curriculum.length > 0 && (
-          <section class="course-section">
-            <h2>Программа обучения</h2>
-            <ol>
-              {d.curriculum.map((m) => (
-                <li>{m}</li>
-              ))}
-            </ol>
-          </section>
-        )
-      }
-
-      {
-        d.fullDescription && (
-          <section class="course-section">
-            <h2>Описание</h2>
-            <p>{d.fullDescription}</p>
-          </section>
-        )
-      }
-
-      {
-        d.advantages.length > 0 && (
-          <section class="course-section course-section--alt">
-            <h2>Преимущества</h2>
-            <ul class="check-list">
-              {d.advantages.map((a) => (
-                <li>{a}</li>
-              ))}
-            </ul>
-          </section>
-        )
-      }
-
-      {
-        d.limitations.length > 0 && (
-          <section class="course-section">
-            <h2>Возможные ограничения</h2>
-            <ul>
-              {d.limitations.map((l) => (
-                <li>{l}</li>
-              ))}
-            </ul>
-          </section>
-        )
-      }
 
       {
         d.category === 'zdorove' && (
@@ -422,6 +503,31 @@ const courseFaq = [
     padding-left: 1.1rem;
     color: var(--color-text-muted);
     font-size: var(--text-sm);
+  }
+  .course-info {
+    margin-top: var(--space-6);
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+  }
+  .course-info h2 {
+    margin: 0 0 var(--space-3);
+    font-size: var(--text-base);
+  }
+  .course-info p,
+  .course-info li {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+  .course-info ul {
+    margin: 0;
+    padding-left: 1.1rem;
+  }
+  .course-info li + li {
+    margin-top: var(--space-2);
   }
   .course-page__sidebar {
     position: relative;
