@@ -13,12 +13,10 @@ import {
   getCoursesByCategory,
   getFeaturedCourses,
   getFreeCourses,
-  getSearchIndex,
   hasOnlyDemoCourses,
 } from '@/utils/courses';
 
 const allCourses = await getPublicCourses();
-const searchIndex = await getSearchIndex();
 const featured = getFeaturedCourses(allCourses, 8);
 const freeByCategory = categories.map((cat) => {
   const catCourses = getCoursesByCategory(allCourses, cat.id);
@@ -121,7 +119,7 @@ const articles = [
             >Подобрать обучение</a
           >
         </div>
-        <Search searchIndex={searchIndex} variant="hero" />
+        <Search variant="hero" />
         <ul class="hero__benefits">
           <li>Бесплатные и платные программы</li>
           <li>Удобное сравнение</li>

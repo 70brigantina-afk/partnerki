@@ -18,7 +18,7 @@ limitations:
   - 'Условия, содержание, стоимость и расписание необходимо проверить на сайте организатора перед регистрацией.'
 certificate: false
 feedback: false
-affiliateUrl: 'https://ihclick.ru/?p=310113&o=310908&idp=323639&erid=2Vtzqv5Bzat'
+affiliateUrl: 'https://zerocoder.ru/?gcpc=8b0dd&utm_source=ih&utm_medium=310908&utm_campaign=323639&utm_term=p8550398&erid=2Vtzqv5Bzat'
 partnerProgram: 'Университета ZeroCoder'
 tags:
   - 'нейросети'

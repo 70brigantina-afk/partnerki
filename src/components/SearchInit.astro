@@ -1,0 +1,140 @@
+---
+import { getSearchIndex } from '@/utils/courses';
+
+const searchIndex = await getSearchIndex();
+---
+
+<script is:inline define:vars={{ searchIndex }}>
+  (() => {
+    if (window.__navigatorSearchInit) return;
+    window.__navigatorSearchInit = true;
+
+    const STOP_WORDS = new Set([
+      'и',
+      'для',
+      'на',
+      'по',
+      'с',
+      'в',
+      'о',
+      'от',
+      'до',
+      'из',
+      'the',
+      'a',
+      'an',
+    ]);
+
+    function normalizeSearchText(value) {
+      return String(value ?? '')
+        .toLowerCase()
+        .replace(/ё/g, 'е')
+        .replace(/[^\p{L}\p{N}\s]+/gu, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+
+    function buildHaystack(item) {
+      return normalizeSearchText(
+        [
+          item.title,
+          item.shortTitle,
+          item.school,
+          item.author,
+          item.category,
+          item.categoryName,
+          item.categoryDescription,
+          item.subcategory,
+          item.shortDescription,
+          item.fullDescription,
+          ...(item.tags || []),
+          ...(item.categoryAliases || []),
+        ].join(' '),
+      );
+    }
+
+    function matchesQuery(item, query) {
+      const hay = buildHaystack(item);
+      const q = normalizeSearchText(query);
+      if (!q) return false;
+      if (hay.includes(q)) return true;
+      const tokens = q
+        .split(' ')
+        .filter((token) => token.length > 1 && !STOP_WORDS.has(token));
+      if (!tokens.length) return false;
+      return tokens.every((token) => hay.includes(token));
+    }
+
+    function bindRoot(root) {
+      if (root.getAttribute('data-search-bound') === 'true') return;
+      root.setAttribute('data-search-bound', 'true');
+
+      const variant = root.getAttribute('data-variant');
+      const openBtn = root.querySelector('[data-search-open]');
+      const panel = root.querySelector('[data-search-panel]');
+      const input = root.querySelector('[data-search-input]');
+      const results = root.querySelector('[data-search-results]');
+      const form = root.querySelector('[data-search-form]');
+
+      if (!input || !results || !form) return;
+
+      if (variant === 'header' && openBtn && panel) {
+        openBtn.addEventListener('click', () => {
+          const hidden = panel.hasAttribute('hidden');
+          if (hidden) {
+            panel.removeAttribute('hidden');
+            input.focus();
+          } else {
+            panel.setAttribute('hidden', '');
+          }
+        });
+        document.addEventListener('click', (e) => {
+          if (!root.contains(e.target)) panel.setAttribute('hidden', '');
+        });
+      }
+
+      function search(q) {
+        const query = String(q ?? '').trim();
+        if (!query) {
+          results.hidden = true;
+          results.innerHTML = '';
+          input.classList.remove('is-active');
+          return;
+        }
+        input.classList.add('is-active');
+        let matches = searchIndex.filter((item) => matchesQuery(item, query));
+        const realMatches = matches.filter((item) => !item.isDemo);
+        if (realMatches.length) matches = realMatches;
+        matches = matches.slice(0, 8);
+
+        if (!matches.length) {
+          results.innerHTML = '<p class="search__empty">Ничего не найдено</p>';
+        } else {
+          results.innerHTML = matches
+            .map(
+              (m) =>
+                `<a class="search__result" role="option" href="/course/${m.slug}/"><strong class="search__result-title">${m.title}</strong><span class="search__result-meta">${m.isDemo ? 'Демо · ' : ''}${m.isFree ? 'Бесплатно' : 'Платно'}</span></a>`,
+            )
+            .join('');
+        }
+        results.hidden = false;
+      }
+
+      input.addEventListener('input', (e) => search(e.target.value));
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        search(input.value ?? '');
+      });
+    }
+
+    function initSearch() {
+      document.querySelectorAll('[data-search-root]').forEach(bindRoot);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSearch);
+    } else {
+      initSearch();
+    }
+  })();
+</script>

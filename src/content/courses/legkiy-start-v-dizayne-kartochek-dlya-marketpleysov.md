@@ -7,9 +7,9 @@ school: 'Бек Five'
 shortDescription: 'Дизайн карточек маркетплейсов.'
 fullDescription: 'Нейтральная карточка программы. Использовать только факты из таблицы и страницы организатора; не придумывать длительность, программу, сертификат, цену или гарантии результата.'
 type: 'intensive'
-isFree: false
+isFree: true
 hasFreeTrial: false
-priceText: 'Стоимость уточняется на сайте организатора'
+priceText: 'Бесплатно'
 level: 'beginner'
 format: 'mixed'
 audience:

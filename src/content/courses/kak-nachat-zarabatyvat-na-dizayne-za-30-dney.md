@@ -7,9 +7,9 @@ school: 'Бек Five'
 shortDescription: 'Старт заработка на дизайне.'
 fullDescription: 'Нейтральная карточка программы. Использовать только факты из таблицы и страницы организатора; не придумывать длительность, программу, сертификат, цену или гарантии результата.'
 type: 'webinar'
-isFree: false
+isFree: true
 hasFreeTrial: false
-priceText: 'Стоимость уточняется на сайте организатора'
+priceText: 'Бесплатно'
 level: 'beginner'
 format: 'webinar'
 audience:

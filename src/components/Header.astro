@@ -4,9 +4,7 @@ import { categories } from '@/config/categories';
 import MobileMenuToggle from './MobileMenuToggle.astro';
 import MobileMenuPanel from './MobileMenuPanel.astro';
 import Search from './Search.astro';
-import { getSearchIndex } from '@/utils/courses';
 
-const searchIndex = await getSearchIndex();
 const navCategories = categories.slice(0, 6);
 ---
 
@@ -46,7 +44,7 @@ const navCategories = categories.slice(0, 6);
     </nav>
 
     <div class="header__actions">
-      <Search searchIndex={searchIndex} />
+      <Search variant="header" />
       <a
         class="header__icon-link hide-mobile"
         href="/izbrannoe/"

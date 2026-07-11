@@ -20,6 +20,7 @@ export const categorySearchAliases: Record<string, string[]> = {
 };
 
 export function isPublicCourse(course: CourseData): boolean {
+  if (course.status === 'paused' || course.status === 'archived') return false;
   if (course.status === 'active') return true;
   if (course.status === 'draft' && showDrafts) return true;
   return false;
